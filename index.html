@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SC Session Analyzer — LordAlexander</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&family=Exo+2:wght@200;300;400;500&display=swap');
+
+:root {
+  --bg: #05070e;
+  --surface: #090d1a;
+  --surface2: #0d1225;
+  --border: #182038;
+  --border2: #1e2d52;
+  --cyan: #00d4ff;
+  --cyan-dim: rgba(0,212,255,0.1);
+  --cyan-glow: 0 0 20px rgba(0,212,255,0.35);
+  --orange: #ff7730;
+  --orange-dim: rgba(255,119,48,0.1);
+  --green: #2dff9a;
+  --green-dim: rgba(45,255,154,0.08);
+  --red: #ff3355;
+  --red-dim: rgba(255,51,85,0.1);
+  --gold: #ffc844;
+  --gold-dim: rgba(255,200,68,0.1);
+  --purple: #a855f7;
+  --purple-dim: rgba(168,85,247,0.1);
+  --text: #8faabf;
+  --text-dim: #3d5570;
+  --text-bright: #ddeeff;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;font-weight:300;min-height:100vh;overflow-x:hidden}
+
+/* scanlines */
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 4px);pointer-events:none;z-index:9999}
+
+.wrap{max-width:1240px;margin:0 auto;padding:36px 20px 80px;position:relative}
+
+/* ── HEADER ── */
+header{text-align:center;margin-bottom:44px;position:relative}
+.logo{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:clamp(30px,6vw,56px);letter-spacing:.14em;text-transform:uppercase;color:var(--text-bright);text-shadow:0 0 40px rgba(0,212,255,.55),0 0 80px rgba(0,212,255,.2);line-height:1}
+.logo span{color:var(--cyan)}
+.logo-sub{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.35em;color:var(--text-dim);text-transform:uppercase;margin-top:6px}
+.header-rule{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--cyan) 30%,var(--cyan) 70%,transparent);margin-top:20px;opacity:.3}
+
+/* ── DROP ZONE / TUTORIAL ── */
+#drop-zone{border:1px solid var(--border2);border-radius:4px;padding:40px 24px;text-align:center;cursor:pointer;background:var(--surface);transition:all .25s;margin-bottom:32px;position:relative;overflow:hidden}
+#drop-zone::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(0,212,255,.03) 0%,transparent 65%);pointer-events:none}
+#drop-zone:hover,#drop-zone.drag-over{border-color:var(--cyan);box-shadow:var(--cyan-glow),inset 0 0 40px rgba(0,212,255,.03)}
+.drop-icon{font-size:42px;display:block;margin-bottom:14px;filter:drop-shadow(0 0 10px rgba(0,212,255,.5))}
+.drop-title{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:19px;letter-spacing:.08em;color:var(--text-bright);text-transform:uppercase;margin-bottom:20px}
+.btn{display:inline-block;margin-top:18px;padding:9px 28px;background:transparent;border:1px solid var(--cyan);color:var(--cyan);font-family:'Rajdhani',sans-serif;font-weight:600;font-size:12px;letter-spacing:.22em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .2s}
+.btn:hover{background:var(--cyan-dim);box-shadow:var(--cyan-glow)}
+#file-input{display:none}
+
+/* Tutorial steps */
+.tut-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 auto 20px;text-align:left}
+@media(max-width:640px){.tut-steps{grid-template-columns:1fr}}
+.tut-step{background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:14px 16px}
+.tut-num{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:28px;color:var(--cyan);opacity:.4;line-height:1;margin-bottom:4px}
+.tut-head{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-bright);margin-bottom:6px}
+.tut-body{font-size:11px;color:var(--text-dim);line-height:1.7}
+.tut-body code{font-family:'Share Tech Mono',monospace;color:var(--cyan);background:var(--cyan-dim);padding:2px 7px;border-radius:2px;font-size:10px;word-break:break-all}
+.tut-tip{font-size:10px;color:var(--orange);margin-top:5px;font-family:'Share Tech Mono',monospace}
+.tut-or{display:flex;align-items:center;gap:12px;margin:16px auto 0;max-width:460px;color:var(--text-dim);font-size:11px}
+.tut-or::before,.tut-or::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.privacy-bar{display:flex;align-items:center;gap:10px;background:rgba(45,255,154,.06);border:1px solid rgba(45,255,154,.15);border-radius:3px;padding:10px 16px;margin-bottom:32px;font-size:11px;color:var(--green);font-family:'Share Tech Mono',monospace;letter-spacing:.05em}
+
+/* ── DASHBOARD ── */
+#dashboard{display:none}
+
+.dash-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.dash-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:20px;letter-spacing:.1em;color:var(--text-bright);text-transform:uppercase}
+.dash-meta{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-dim);margin-left:10px;font-weight:400}
+.reset-btn{background:transparent;border:1px solid var(--border2);color:var(--text-dim);font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.1em;padding:6px 14px;cursor:pointer;border-radius:2px;transition:all .2s;text-transform:uppercase}
+.reset-btn:hover{border-color:var(--text-dim);color:var(--text)}
+
+/* ── VERSION FILTER ── */
+.ver-filter-wrap{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.vf-label{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-dim);white-space:nowrap;margin-right:4px}
+.vf-quick{background:transparent;border:1px solid var(--border2);color:var(--text-dim);font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.1em;padding:4px 12px;cursor:pointer;border-radius:2px;transition:all .15s;text-transform:uppercase;white-space:nowrap}
+.vf-quick:hover{border-color:var(--cyan);color:var(--cyan)}
+.vf-quick.active{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim)}
+.vf-divider{width:1px;height:16px;background:var(--border2);flex-shrink:0}
+.vf-patch{background:transparent;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.08em;padding:4px 10px;cursor:pointer;border-radius:2px;transition:opacity .15s;text-transform:uppercase;border:1px solid transparent}
+.vf-patch.inactive{opacity:.3}
+.vf-note{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--gold);opacity:.7;margin-left:auto;white-space:nowrap}
+
+/* ── STAT CARDS ── */
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:14px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:16px 16px 14px;position:relative;overflow:hidden;opacity:0;animation:fadeUp .45s ease forwards}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.stat-card.c-cyan::after{background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+.stat-card.c-orange::after{background:var(--orange);box-shadow:0 0 10px var(--orange)}
+.stat-card.c-green::after{background:var(--green);box-shadow:0 0 10px var(--green)}
+.stat-card.c-gold::after{background:var(--gold);box-shadow:0 0 10px var(--gold)}
+.stat-card.c-red::after{background:var(--red);box-shadow:0 0 10px var(--red)}
+.stat-card.c-purple::after{background:var(--purple);box-shadow:0 0 10px var(--purple)}
+.s-label{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px}
+.s-val{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:clamp(22px,3.5vw,34px);line-height:1;margin-bottom:3px}
+.stat-card.c-cyan .s-val{color:var(--cyan)}
+.stat-card.c-orange .s-val{color:var(--orange)}
+.stat-card.c-green .s-val{color:var(--green)}
+.stat-card.c-gold .s-val{color:var(--gold)}
+.stat-card.c-red .s-val{color:var(--red)}
+.stat-card.c-purple .s-val{color:var(--purple)}
+.s-sub{font-size:10px;color:var(--text-dim)}
+
+/* ── PANELS ── */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:18px 20px;margin-bottom:12px;opacity:0;animation:fadeUp .45s ease .1s forwards}
+.panel-hd{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--cyan);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.panel-hd::before{content:'';display:inline-block;width:14px;height:1px;background:var(--cyan)}
+.panel-hd .count{color:var(--text-dim);font-size:9px;margin-left:auto}
+.panel-hd .alltime-badge{font-size:8px;color:var(--gold);opacity:.7;background:var(--gold-dim);border:1px solid rgba(255,200,68,.2);padding:1px 7px;border-radius:2px;letter-spacing:.1em}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:800px){.two-col,.three-col{grid-template-columns:1fr}}
+
+/* ── CHART ── */
+.bar-chart{display:flex;align-items:flex-end;gap:3px;height:90px;width:100%;overflow-x:auto;padding-bottom:2px}
+.bar-col{flex:1;min-width:20px;max-width:40px;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end;cursor:pointer;position:relative}
+.bar{width:100%;border-radius:1px 1px 0 0;min-height:2px;transition:opacity .15s;position:relative}
+.bar.normal{background:linear-gradient(to top,rgba(0,212,255,.8),rgba(0,212,255,.2))}
+.bar.missions{background:linear-gradient(to top,rgba(45,255,154,.9),rgba(45,255,154,.2))}
+.bar.crashed{background:linear-gradient(to top,rgba(255,51,85,.8),rgba(255,51,85,.2))}
+.bar.mining{background:linear-gradient(to top,rgba(255,200,68,.85),rgba(255,200,68,.2))}
+.bar:hover{opacity:.7}
+.bar-lbl{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--text-dim);white-space:nowrap;transform:rotate(-45deg) translateX(-4px);transform-origin:top right;height:16px;display:flex;align-items:center}
+.chart-tab{background:transparent;border:1px solid var(--border2);color:var(--text-dim);font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.08em;padding:3px 10px;cursor:pointer;border-radius:2px;transition:all .15s;text-transform:uppercase}
+.chart-tab.active{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim)}
+.chart-legend{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:5px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim)}
+.leg-dot{width:8px;height:8px;border-radius:1px}
+
+/* ── SESSION TABLE ── */
+.session-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.session-tbl th{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-dim);text-align:left;padding:0 8px 8px 0;border-bottom:1px solid var(--border)}
+.session-tbl td{padding:7px 8px 7px 0;border-bottom:1px solid rgba(24,32,56,.5);vertical-align:middle}
+.session-tbl tr:last-child td{border-bottom:none}
+.session-tbl tr:hover td{background:rgba(0,212,255,.02)}
+.td-date{font-family:'Share Tech Mono',monospace;color:var(--text-dim);font-size:10px;white-space:nowrap}
+.td-dur{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:15px;color:var(--cyan);white-space:nowrap}
+.td-patch{font-family:'Share Tech Mono',monospace;font-size:9px;padding:2px 6px;border-radius:2px;white-space:nowrap}
+.patch-47{background:rgba(168,85,247,.12);color:var(--purple);border:1px solid rgba(168,85,247,.2)}
+.patch-48{background:rgba(0,212,255,.08);color:var(--cyan);border:1px solid rgba(0,212,255,.15)}
+.patch-48h{background:rgba(255,119,48,.1);color:var(--orange);border:1px solid rgba(255,119,48,.2)}
+.patch-481{background:rgba(45,255,154,.08);color:var(--green);border:1px solid rgba(45,255,154,.15)}
+.td-missions{color:var(--green);font-family:'Share Tech Mono',monospace;font-size:10px}
+.td-incap{color:var(--red);font-family:'Share Tech Mono',monospace;font-size:10px}
+.td-crash{color:var(--red);font-size:12px}
+.td-mining{color:var(--gold);font-size:11px}
+.td-ships{color:var(--text-dim);font-size:10px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── SCROLLABLE ── */
+.scrollable{max-height:300px;overflow-y:auto;padding-right:4px}
+.scrollable::-webkit-scrollbar{width:2px}
+.scrollable::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ── LIST ITEMS ── */
+.list-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(24,32,56,.4);font-size:11px}
+.list-item:last-child{border-bottom:none}
+.li-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.li-name{flex:1;color:var(--text)}
+.li-count{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);white-space:nowrap}
+.li-date{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);margin-left:auto;white-space:nowrap}
+
+.li-dot.gold{background:var(--gold);box-shadow:0 0 4px var(--gold)}
+.li-name.gold{color:var(--gold);font-family:'Share Tech Mono',monospace;font-size:10px}
+.li-dot.cyan{background:var(--cyan);box-shadow:0 0 4px var(--cyan)}
+.li-name.cyan{color:var(--cyan)}
+.li-dot.green{background:var(--green);box-shadow:0 0 4px var(--green)}
+.li-dot.purple{background:var(--purple);box-shadow:0 0 4px var(--purple)}
+.li-name.purple{color:var(--purple)}
+
+/* ── MINING PANEL ── */
+.mineral-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}
+.mineral-cell{background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:10px 12px}
+.mc-name{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--purple);letter-spacing:.05em;margin-bottom:4px}
+.mc-count{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:22px;color:var(--text-bright)}
+.mc-sub{font-size:9px;color:var(--text-dim)}
+.refinery-row{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.ref-badge{background:var(--gold-dim);border:1px solid rgba(255,200,68,.2);border-radius:2px;padding:4px 10px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--gold)}
+
+/* ── TOOLTIP ── */
+#tooltip{position:fixed;background:var(--surface2);border:1px solid var(--cyan);border-radius:2px;padding:7px 11px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--cyan);pointer-events:none;white-space:nowrap;z-index:9998;display:none;box-shadow:var(--cyan-glow)}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:28px;color:var(--text-dim);font-size:12px;font-family:'Share Tech Mono',monospace}
+
+/* ── SET PROGRESS ── */
+.set-card{background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:10px 12px}
+.set-name{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:13px;color:var(--text-bright);margin-bottom:6px;letter-spacing:.05em}
+.set-slots{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+.slot-badge{font-family:'Share Tech Mono',monospace;font-size:9px;padding:2px 8px;border-radius:2px;white-space:nowrap}
+.slot-have{background:rgba(45,255,154,.1);color:var(--green);border:1px solid rgba(45,255,154,.25)}
+.slot-miss{background:rgba(255,51,85,.05);color:var(--text-dim);border:1px solid rgba(24,32,56,.8)}
+.bp-dupe{opacity:.45;font-style:italic}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="logo">STAR <span>CITIZEN</span></div>
+  <div class="logo-sub">// Multi-Session Log Analyzer — LordAlexander</div>
+  <div class="header-rule"></div>
+</header>
+
+<div class="privacy-bar">
+  <span>🔒</span>
+  <span>ALL PROCESSING IS LOCAL — files never leave your machine</span>
+</div>
+
+<div id="drop-zone">
+  <span class="drop-icon">📂</span>
+  <div class="drop-title">Load Your Session Logs</div>
+
+  <div class="tut-steps">
+    <div class="tut-step">
+      <div class="tut-num">1</div>
+      <div class="tut-head">Open your log folder</div>
+      <div class="tut-body">
+        Press <strong>Win + R</strong>, paste this path and hit Enter:<br><br>
+        <code>C:\Program Files\Roberts Space Industries\StarCitizen\LIVE\logbackups</code>
+      </div>
+    </div>
+    <div class="tut-step">
+      <div class="tut-num">2</div>
+      <div class="tut-head">Select all log files</div>
+      <div class="tut-body">
+        Click anywhere inside the folder window, then press <strong>Ctrl + A</strong> to select every file.<br><br>
+        You can load files from multiple patches at once — the analyzer handles all of them.
+      </div>
+      <div class="tut-tip">⚑ Blueprint events only appear in 4.7+ logs</div>
+    </div>
+    <div class="tut-step">
+      <div class="tut-num">3</div>
+      <div class="tut-head">Drop them here</div>
+      <div class="tut-body">
+        Drag the selected files directly onto this page, or use the Browse button below.<br><br>
+        Works with 1 file or hundreds at once — duplicates are automatically skipped.
+      </div>
+    </div>
+  </div>
+
+  <div class="tut-or">— or —</div>
+  <button class="btn" onclick="document.getElementById('file-input').click()">Browse Files</button>
+  <input type="file" id="file-input" accept=".log" multiple>
+</div>
+
+<div id="dashboard">
+  <div class="dash-head">
+    <div class="dash-title">PILOT DOSSIER <span class="dash-meta" id="dash-meta"></span></div>
+    <button class="reset-btn" id="reset-btn">↩ Load Different Files</button>
+  </div>
+
+  <!-- Version filter -->
+  <div class="ver-filter-wrap" id="ver-filter-wrap"></div>
+
+  <!-- Stat cards -->
+  <div class="stat-row" id="stat-row"></div>
+
+  <!-- Bar chart -->
+  <div class="panel" id="chart-panel">
+    <div class="panel-hd">
+      Session History
+      <span style="margin-left:auto;display:flex;gap:4px">
+        <button class="chart-tab active" data-view="session">Per Session</button>
+        <button class="chart-tab" data-view="daily">Per Day</button>
+      </span>
+    </div>
+    <div class="bar-chart" id="bar-chart"></div>
+    <div class="chart-legend">
+      <div class="leg-item"><div class="leg-dot" style="background:rgba(45,255,154,.8)"></div>Missions</div>
+      <div class="leg-item"><div class="leg-dot" style="background:rgba(255,200,68,.8)"></div>Mining</div>
+      <div class="leg-item"><div class="leg-dot" style="background:rgba(0,212,255,.6)"></div>Normal</div>
+      <div class="leg-item"><div class="leg-dot" style="background:rgba(255,51,85,.8)"></div>Crashed</div>
+    </div>
+  </div>
+
+  <!-- Sessions table -->
+  <div class="panel">
+    <div class="panel-hd">All Sessions <span class="count" id="session-count"></span></div>
+    <div class="scrollable">
+      <table class="session-tbl">
+        <thead><tr>
+          <th>Date</th>
+          <th>Duration</th>
+          <th>Patch</th>
+          <th>Missions</th>
+          <th>BPs</th>
+          <th>Downs</th>
+          <th>Status</th>
+          <th>Type</th>
+          <th>Ships</th>
+        </tr></thead>
+        <tbody id="session-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Blueprints + Party -->
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-hd">
+        Blueprints Earned <span class="count" id="bp-count"></span>
+        <span class="alltime-badge">ALL-TIME</span>
+        <button id="export-bp-btn" class="btn" style="margin-top:0;padding:4px 14px;font-size:10px;display:none" onclick="exportBlueprintList()">⬇ Export for Bot</button>
+      </div>
+      <div class="scrollable"><ul id="bp-list" style="list-style:none"></ul></div>
+    </div>
+    <div class="panel">
+      <div class="panel-hd">Party Members <span class="count" id="party-count"></span></div>
+      <div class="scrollable"><ul id="party-list" style="list-style:none"></ul></div>
+    </div>
+  </div>
+
+  <!-- Armor Set Progress -->
+  <div class="panel" id="set-panel" style="display:none">
+    <div class="panel-hd">
+      Armor Set Progress <span class="count" id="set-count"></span>
+      <span class="alltime-badge">ALL-TIME</span>
+    </div>
+    <div id="set-grid" class="mineral-grid"></div>
+  </div>
+
+  <!-- Ships + Mission Types -->
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-hd">Ships Flown <span class="count" id="ships-count"></span></div>
+      <div class="scrollable"><ul id="ships-list" style="list-style:none"></ul></div>
+    </div>
+    <div class="panel">
+      <div class="panel-hd">Mission Types</div>
+      <div class="scrollable"><ul id="mission-types-list" style="list-style:none"></ul></div>
+    </div>
+  </div>
+
+  <!-- Mining panel -->
+  <div class="panel" id="mining-panel" style="display:none">
+    <div class="panel-hd">⛏ Mining Summary</div>
+    <div class="mineral-grid" id="mineral-grid"></div>
+    <div class="refinery-row" id="refinery-row"></div>
+  </div>
+
+</div><!-- /dashboard -->
+</div><!-- /wrap -->
+<div id="tooltip"></div>
+
+<script>
+// ── Blueprint export ──
+function exportBlueprintList() {
+  const names = window._exportBPNames || [];
+  if (!names.length) return;
+  const blob = new Blob([names.join('\n')], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'my_blueprints.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ── Drop zone wiring ──
+const dropZone  = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+const dashboard = document.getElementById('dashboard');
+const tooltip   = document.getElementById('tooltip');
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); processFiles([...e.dataTransfer.files]); });
+fileInput.addEventListener('change', e => processFiles([...e.target.files]));
+document.getElementById('reset-btn').addEventListener('click', () => {
+  dashboard.style.display = 'none';
+  dropZone.style.display  = 'block';
+  fileInput.value = '';
+});
+
+// ── Regex patterns ──
+const R = {
+  ts:        /<(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?)>/g,
+  version:   /FileVersion:\s*([\d.]+)/,
+  build:     /Changelist:\s*(\d+)/,
+  branch:    /Branch:\s*(\S+)/,
+  bp:        /SHUDEvent_OnNotification.*?Added notification "Received Blueprint:\s*(.*?):\s*"\s*\[/gi,
+  done:      /SHUDEvent.*?Added notification "Contract Complete:/gi,
+  accepted:  /SHUDEvent.*?Added notification "Contract Accepted:/gi,
+  incap:     /SHUDEvent.*?Added notification "Incapacitated:/gi,
+  medbed:    /SHUDEvent.*?Added notification "Medical Bed:/gi,
+  party:     /^<[^>]+>\s*([\w\d_]+) has joined the party/gim,
+  ship:      /SHUDEvent.*?Added notification "You have joined channel '([^']+)'/gi,
+  mineral:   /InventoryManagement.*?End Page Entity Class\[Harvestable_Mineral_1H_(\w+)\]/gi,
+  trophy:    /InventoryManagement.*?End Page Entity Class\[Harvestable_Trophy_1H_(\w+)\]/gi,
+  refinery:  /SHUDEvent.*?Added notification "A Refinery Work Order has been Completed at ([^:]+):/gi,
+  mtype:     /generator name \[([^\]]+)\].*?contract \[([^\]]+)\]/gi,
+  fatal:     /FatalCollision.*?vehicle ([A-Z][^\s\[]+)/gi,
+  gpucrash:  /GPU [Cc]rash/,
+  normal:    /SystemQuit/,
+  fname:     /Game_Build_(\d+)__(\d{2})_(\w+)_(\d{2})__(\d{2})_(\d{2})_(\d{2})_/,
+};
+
+const MONTHS = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+
+const MINERAL_NAMES = {
+  Aphorite:'Aphorite', Hadanite:'Hadanite', Dolivine:'Dolivine',
+  Glacosite:'Glacosite', Beradom:'Beradom', Feynmaline:'Feynmaline',
+  Sadaryx:'Sadaryx', Janalite:'Janalite', Stileron:'Stileron',
+  Carinite:'Carinite', Saldynium:'Saldynium', Jaclium:'Jaclium',
+};
+
+const TROPHY_NAMES = {
+  vlkJuvenileFang: 'Vanduul Juvenile Fang',
+  vlkAdultFang_irradiated: 'Irradiated Valakkar Fang',
+};
+
+// Patches considered "pre-reset" (before 4.8 season)
+const PRE_RESET_PATCHES = new Set(['4.7']);
+
+function patchLabel(branch) {
+  if (!branch) return '?';
+  if (branch.includes('4.7'))   return '4.7';
+  if (branch.includes('4.8.1')) return '4.8.1';
+  if (branch.includes('hotfix'))return '4.8 Hotfix';
+  if (branch.includes('4.8'))   return '4.8';
+  return branch;
+}
+
+function patchClass(label) {
+  if (label === '4.7')        return 'patch-47';
+  if (label === '4.8')        return 'patch-48';
+  if (label === '4.8 Hotfix') return 'patch-48h';
+  if (label === '4.8.1')      return 'patch-481';
+  return 'patch-48';
+}
+
+function fmtDur(ms) {
+  const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000);
+  return h > 0 ? (m > 0 ? `${h}h ${m}m` : `${h}h`) : `${m}m`;
+}
+
+function fmtDate(d) {
+  return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'2-digit' });
+}
+
+function re_all(pattern, text) {
+  const re = new RegExp(pattern.source, pattern.flags);
+  const results = [];
+  let m;
+  while ((m = re.exec(text)) !== null) results.push(m);
+  return results;
+}
+
+function dedup(arr) { return [...new Set(arr)]; }
+
+function parseLog(text, filename) {
+  const tss = [];
+  R.ts.lastIndex = 0;
+  let tm;
+  while ((tm = R.ts.exec(text)) !== null) {
+    const d = new Date(tm[1].endsWith('Z') ? tm[1] : tm[1] + 'Z');
+    if (!isNaN(d)) tss.push(d.getTime());
+  }
+  tss.sort((a,b) => a-b);
+  if (tss.length < 10) return null;
+  const durMs = tss[tss.length-1] - tss[0];
+  if (durMs < 90000) return null;
+
+  const vm = R.version.exec(text), bldm = R.build.exec(text), brm = R.branch.exec(text);
+  const version = vm ? vm[1] : '?';
+  const build   = bldm ? bldm[1] : '?';
+  const branch  = brm ? brm[1] : '?';
+  const patch   = patchLabel(branch);
+
+  const gpuCrash = R.gpucrash.test(text);
+  const cleanExit = R.normal.test(text);
+  const crashed   = gpuCrash || !cleanExit;
+  const crashType = gpuCrash ? 'GPU Crash' : (!cleanExit ? 'Disconnect' : null);
+
+  const bpNames          = dedup(re_all(R.bp, text).map(m => m[1].trim()));
+  const missionsDone     = re_all(R.done, text).length;
+  const missionsAccepted = re_all(R.accepted, text).length;
+  const incaps           = re_all(R.incap, text).length;
+  const medbeds          = re_all(R.medbed, text).length;
+  const party            = dedup(re_all(R.party, text).map(m => m[1].trim()));
+  const ships            = dedup(
+    re_all(R.ship, text)
+      .map(m => m[1])
+      .filter(ch => ch.includes(' : '))
+      .map(ch => ch.split(' : ')[0].trim())
+  );
+
+  const minerals = {}, trophies = {};
+  re_all(R.mineral, text).forEach(m => {
+    const n = MINERAL_NAMES[m[1]] || m[1];
+    minerals[n] = (minerals[n] || 0) + 1;
+  });
+  re_all(R.trophy, text).forEach(m => {
+    const n = TROPHY_NAMES[m[1]] || m[1];
+    trophies[n] = (trophies[n] || 0) + 1;
+  });
+  const isMining = Object.keys(minerals).length > 0 || Object.keys(trophies).length > 0;
+
+  const refinery = {};
+  re_all(R.refinery, text).forEach(m => {
+    const loc = m[1].trim();
+    refinery[loc] = (refinery[loc] || 0) + 1;
+  });
+
+  const missionTypes = dedup(re_all(R.mtype, text).map(m => m[2]));
+  const fatals       = dedup(re_all(R.fatal, text).map(m => m[1]));
+
+  let startDate;
+  const fm = R.fname.exec(filename);
+  if (fm) {
+    const [,build2,day,mon,yr,h,min,sec] = fm;
+    startDate = new Date(2000 + parseInt(yr), MONTHS[mon] ?? 0, parseInt(day), parseInt(h), parseInt(min), parseInt(sec));
+  } else {
+    startDate = new Date(tss[0]);
+  }
+
+  return {
+    filename, startDate, startMs: tss[0], durMs,
+    version, build, branch, patch,
+    crashed, crashType,
+    bpNames, missionsDone, missionsAccepted, incaps, medbeds,
+    party, ships, minerals, trophies, isMining, refinery,
+    missionTypes, fatals,
+  };
+}
+
+function processFiles(files) {
+  const logs = files.filter(f => f.name.toLowerCase().endsWith('.log'));
+  if (!logs.length) { alert('No .log files found.'); return; }
+
+  Promise.all(logs.map(f => new Promise(res => {
+    const r = new FileReader();
+    r.onload = e => res({ text: e.target.result, filename: f.name });
+    r.onerror = () => res(null);
+    r.readAsText(f);
+  }))).then(results => {
+    const sessions = results
+      .filter(Boolean)
+      .map(({ text, filename }) => parseLog(text, filename))
+      .filter(Boolean)
+      .sort((a,b) => a.startMs - b.startMs);
+
+    if (!sessions.length) { alert('No valid sessions found.'); return; }
+    const seen   = new Set();
+    const unique = sessions.filter(s => {
+      if (seen.has(s.startMs)) return false;
+      seen.add(s.startMs);
+      return true;
+    });
+    renderDashboard(unique);
+  });
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// renderDashboard — blueprints are always all-time; everything else is filtered
+// ════════════════════════════════════════════════════════════════════════════
+function renderDashboard(allSessions) {
+  dropZone.style.display  = 'none';
+  dashboard.style.display = 'block';
+
+  // ── Patch list ──
+  const patches = [...new Set(allSessions.map(s => s.patch))];
+  const hasPreReset = patches.some(p => PRE_RESET_PATCHES.has(p));
+  const hasPostReset = patches.some(p => !PRE_RESET_PATCHES.has(p));
+
+  // Default: if we have both pre- and post-reset, start in season (4.8+) mode
+  let activePatches = (hasPreReset && hasPostReset)
+    ? new Set(patches.filter(p => !PRE_RESET_PATCHES.has(p)))
+    : new Set(patches);
+
+  // ── Blueprints — ALWAYS all-time, never filtered ──
+  const allBPs       = [];
+  const seenBPNames  = new Set();
+  allSessions.forEach(s => s.bpNames.forEach(bp => {
+    const isNew = !seenBPNames.has(bp);
+    seenBPNames.add(bp);
+    allBPs.push({ bp, date: fmtDate(s.startDate), isNew });
+  }));
+  const uniqueBPCount  = seenBPNames.size;
+  const bpSessionCount = allSessions.filter(s => s.bpNames.length > 0).length;
+
+  // Render blueprints once — static, unaffected by version filter
+  renderBlueprints(allBPs, seenBPNames, uniqueBPCount, bpSessionCount);
+
+  // ── Version filter bar ──
+  buildVersionFilter();
+
+  // ── Chart tab state (must be declared before rerender calls renderChart) ──
+  let chartView = 'session';
+
+  // ── Initial reactive render ──
+  rerender();
+  document.querySelectorAll('.chart-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.chart-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      chartView = btn.dataset.view;
+      renderChart(allSessions.filter(s => activePatches.has(s.patch)));
+    });
+  });
+
+  // ════════════════════════
+  // Version filter builder
+  // ════════════════════════
+  function buildVersionFilter() {
+    const wrap = document.getElementById('ver-filter-wrap');
+    wrap.innerHTML = '';
+
+    const lbl = document.createElement('span');
+    lbl.className = 'vf-label';
+    lbl.textContent = 'View';
+    wrap.appendChild(lbl);
+
+    function quickBtn(label, getPatches) {
+      const b = document.createElement('button');
+      b.className = 'vf-quick';
+      b.textContent = label;
+      b.addEventListener('click', () => {
+        activePatches = getPatches();
+        syncFilterUI();
+        rerender();
+      });
+      wrap.appendChild(b);
+    }
+
+    quickBtn('All Time',    () => new Set(patches));
+    if (hasPreReset && hasPostReset) {
+      quickBtn('4.8 Season', () => new Set(patches.filter(p => !PRE_RESET_PATCHES.has(p))));
+    }
+
+    const divider = document.createElement('span');
+    divider.className = 'vf-divider';
+    wrap.appendChild(divider);
+
+    patches.forEach(p => {
+      const b = document.createElement('button');
+      b.className = `vf-patch td-patch ${patchClass(p)}`;
+      b.dataset.patch = p;
+      b.textContent = p;
+      b.addEventListener('click', () => {
+        if (activePatches.has(p)) {
+          if (activePatches.size > 1) activePatches.delete(p);
+        } else {
+          activePatches.add(p);
+        }
+        syncFilterUI();
+        rerender();
+      });
+      wrap.appendChild(b);
+    });
+
+    if (hasPreReset && hasPostReset) {
+      const note = document.createElement('span');
+      note.className = 'vf-note';
+      note.textContent = '★ Blueprints always show all-time';
+      wrap.appendChild(note);
+    }
+
+    syncFilterUI();
+  }
+
+  function syncFilterUI() {
+    document.querySelectorAll('.vf-patch').forEach(b => {
+      b.classList.toggle('inactive', !activePatches.has(b.dataset.patch));
+    });
+  }
+
+  // ════════════════════════
+  // Main reactive rerender
+  // ════════════════════════
+  function rerender() {
+    const sessions = allSessions.filter(s => activePatches.has(s.patch));
+    renderMeta(sessions);
+    renderStatCards(sessions);
+    renderChart(sessions);
+    renderSessionTable(sessions);
+    renderShips(sessions);
+    renderMissionTypes(sessions);
+    renderMining(sessions);
+    renderParty(sessions);
+  }
+
+  function renderMeta(sessions) {
+    const totalLoaded = allSessions.length;
+    const showing     = sessions.length;
+    let meta = `${showing} session${showing !== 1 ? 's' : ''}`;
+    if (sessions.length) {
+      meta += ` · ${fmtDate(sessions[0].startDate)} – ${fmtDate(sessions[sessions.length-1].startDate)}`;
+    }
+    if (showing < totalLoaded) {
+      meta += ` (${totalLoaded} loaded)`;
+    }
+    document.getElementById('dash-meta').textContent = meta;
+  }
+
+  // ── Stat cards ──
+  function renderStatCards(sessions) {
+    if (!sessions.length) {
+      document.getElementById('stat-row').innerHTML =
+        '<div class="empty" style="grid-column:1/-1">No sessions match the current filter.</div>';
+      return;
+    }
+    const totalMs      = sessions.reduce((s,x) => s + x.durMs, 0);
+    const longestMs    = Math.max(...sessions.map(x => x.durMs));
+    const totalMiss    = sessions.reduce((s,x) => s + x.missionsDone, 0);
+    const totalIncaps  = sessions.reduce((s,x) => s + x.incaps, 0);
+    const totalBeds    = sessions.reduce((s,x) => s + x.medbeds, 0);
+    const totalCrashes = sessions.filter(x => x.crashed).length;
+
+    const statRow = document.getElementById('stat-row');
+    statRow.innerHTML = '';
+    [
+      { label:'Total Playtime',  val: fmtDur(totalMs),   sub:`${sessions.length} sessions`, cls:'c-cyan',   delay:0    },
+      { label:'Avg Session',     val: fmtDur(Math.round(totalMs/sessions.length)), sub:'per session', cls:'c-orange', delay:.06  },
+      { label:'Longest Session', val: fmtDur(longestMs), sub:'single session',   cls:'c-cyan',   delay:.12  },
+      { label:'Missions Done',   val: totalMiss,         sub:'contracts completed', cls:'c-green',  delay:.18  },
+      { label:'Blueprints',      val: uniqueBPCount,     sub:`${allBPs.length} total · all-time`, cls:'c-gold', delay:.24 },
+      { label:'Times Downed',    val: totalIncaps,       sub:'incapacitations',  cls:'c-red',    delay:.30  },
+      { label:'Med Bed Uses',    val: totalBeds,         sub:'healings',         cls:'c-purple', delay:.36  },
+      { label:'GPU Crashes',     val: totalCrashes,      sub:`${Math.round(totalCrashes/sessions.length*100)}% of sessions`, cls:'c-red', delay:.42 },
+    ].forEach(({ label, val, sub, cls, delay }) => {
+      const c = document.createElement('div');
+      c.className = `stat-card ${cls}`;
+      c.style.animationDelay = `${delay}s`;
+      c.innerHTML = `<div class="s-label">${label}</div><div class="s-val">${val}</div><div class="s-sub">${sub}</div>`;
+      statRow.appendChild(c);
+    });
+  }
+
+  // ── Bar chart ──
+  function renderChart(sessions) {
+    if (chartView === 'daily') renderDailyBars(sessions);
+    else renderSessionBars(sessions);
+  }
+
+  function renderSessionBars(sessions) {
+    const barChart = document.getElementById('bar-chart');
+    barChart.innerHTML = '';
+    if (!sessions.length) return;
+    const maxMs = Math.max(...sessions.map(s => s.durMs));
+    sessions.forEach(s => {
+      const pct = Math.max(2, (s.durMs / maxMs) * 100);
+      const col = document.createElement('div');
+      col.className = 'bar-col';
+      let barCls = 'normal';
+      if (s.crashed)           barCls = 'crashed';
+      else if (s.isMining)     barCls = 'mining';
+      else if (s.missionsDone) barCls = 'missions';
+      const bar = document.createElement('div');
+      bar.className = `bar ${barCls}`;
+      bar.style.height = `${pct}%`;
+      bar.addEventListener('mouseenter', e => {
+        tooltip.style.display = 'block';
+        const parts = [fmtDate(s.startDate), fmtDur(s.durMs),
+          s.missionsDone > 0 ? `${s.missionsDone} missions` : null,
+          s.isMining ? '⛏ mining' : null,
+          s.crashed  ? `💥 ${s.crashType}` : null,
+          `[${s.patch}]`].filter(Boolean);
+        tooltip.textContent = parts.join('  ·  ');
+      });
+      bar.addEventListener('mousemove', e => { tooltip.style.left=(e.clientX+14)+'px'; tooltip.style.top=(e.clientY-38)+'px'; });
+      bar.addEventListener('mouseleave', () => tooltip.style.display='none');
+      const lbl = document.createElement('div');
+      lbl.className = 'bar-lbl';
+      lbl.textContent = s.startDate.toLocaleDateString('en-US',{month:'numeric',day:'numeric'});
+      col.appendChild(bar); col.appendChild(lbl); barChart.appendChild(col);
+    });
+  }
+
+  function renderDailyBars(sessions) {
+    const barChart = document.getElementById('bar-chart');
+    barChart.innerHTML = '';
+    if (!sessions.length) return;
+    const dayMap = {};
+    sessions.forEach(s => {
+      const key = s.startDate.toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'2-digit'});
+      if (!dayMap[key]) dayMap[key] = { ms:0, missions:0, crashes:0, mining:false, sessions:0, dateObj: s.startDate };
+      dayMap[key].ms       += s.durMs;
+      dayMap[key].missions += s.missionsDone;
+      dayMap[key].crashes  += s.crashed ? 1 : 0;
+      dayMap[key].mining    = dayMap[key].mining || s.isMining;
+      dayMap[key].sessions++;
+    });
+    const days  = Object.entries(dayMap).sort((a,b) => a[1].dateObj - b[1].dateObj);
+    const maxMs = Math.max(...days.map(([,d]) => d.ms));
+    days.forEach(([dateKey, d]) => {
+      const pct = Math.max(2, (d.ms / maxMs) * 100);
+      const col = document.createElement('div');
+      col.className = 'bar-col';
+      let barCls = 'normal';
+      if (d.crashes > 0)   barCls = 'crashed';
+      else if (d.mining)   barCls = 'mining';
+      else if (d.missions) barCls = 'missions';
+      const bar = document.createElement('div');
+      bar.className = `bar ${barCls}`;
+      bar.style.height = `${pct}%`;
+      bar.addEventListener('mouseenter', e => {
+        tooltip.style.display = 'block';
+        const parts = [dateKey, fmtDur(d.ms), `${d.sessions} session${d.sessions>1?'s':''}`,
+          d.missions > 0   ? `${d.missions} missions` : null,
+          d.mining         ? '⛏ mining' : null,
+          d.crashes > 0    ? `💥 ${d.crashes} crash${d.crashes>1?'es':''}` : null
+        ].filter(Boolean);
+        tooltip.textContent = parts.join('  ·  ');
+      });
+      bar.addEventListener('mousemove', e => { tooltip.style.left=(e.clientX+14)+'px'; tooltip.style.top=(e.clientY-38)+'px'; });
+      bar.addEventListener('mouseleave', () => tooltip.style.display='none');
+      const lbl = document.createElement('div');
+      lbl.className = 'bar-lbl';
+      lbl.textContent = `${d.dateObj.getMonth()+1}/${d.dateObj.getDate()}`;
+      col.appendChild(bar); col.appendChild(lbl); barChart.appendChild(col);
+    });
+  }
+
+  // ── Sessions table ──
+  function renderSessionTable(sessions) {
+    const tbody = document.getElementById('session-tbody');
+    tbody.innerHTML = '';
+    document.getElementById('session-count').textContent = `${sessions.length} sessions`;
+    [...sessions].reverse().forEach(s => {
+      const tr = document.createElement('tr');
+      const shipStr  = s.ships.length ? s.ships.join(', ') : '—';
+      const crashIcon = s.crashed
+        ? `<span class="td-crash" title="${s.crashType}">💥</span>`
+        : '<span style="color:var(--text-dim);font-size:10px">✓</span>';
+      tr.innerHTML = `
+        <td class="td-date">${fmtDate(s.startDate)}</td>
+        <td class="td-dur">${fmtDur(s.durMs)}</td>
+        <td><span class="td-patch ${patchClass(s.patch)}">${s.patch}</span></td>
+        <td class="td-missions">${s.missionsDone > 0 ? s.missionsDone : '—'}</td>
+        <td class="td-missions" style="color:var(--gold)">${s.bpNames.length > 0 ? s.bpNames.length : '—'}</td>
+        <td class="td-incap">${s.incaps > 0 ? s.incaps : '—'}</td>
+        <td>${crashIcon}</td>
+        <td class="td-mining">${s.isMining ? '⛏' : ''}</td>
+        <td class="td-ships" title="${shipStr}">${shipStr}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ── Party ──
+  function renderParty(sessions) {
+    const partyMap = {};
+    sessions.forEach(s => s.party.forEach(p => { partyMap[p] = (partyMap[p]||0)+1; }));
+    const partyList  = document.getElementById('party-list');
+    const sortedParty = Object.entries(partyMap).sort((a,b) => b[1]-a[1]);
+    document.getElementById('party-count').textContent = `${sortedParty.length}`;
+    partyList.innerHTML = '';
+    if (sortedParty.length) {
+      sortedParty.forEach(([name, count]) => {
+        const li = document.createElement('li');
+        li.className = 'list-item';
+        li.innerHTML = `<span class="li-dot green"></span><span class="li-name">${name}</span><span class="li-count">${count} session${count>1?'s':''}</span>`;
+        partyList.appendChild(li);
+      });
+    } else {
+      partyList.innerHTML = '<div class="empty">No party members recorded</div>';
+    }
+  }
+
+  // ── Ships ──
+  function renderShips(sessions) {
+    const shipMap = {};
+    sessions.forEach(s => s.ships.forEach(sh => { shipMap[sh] = (shipMap[sh]||0)+1; }));
+    const shipsList   = document.getElementById('ships-list');
+    const sortedShips = Object.entries(shipMap).sort((a,b) => b[1]-a[1]);
+    document.getElementById('ships-count').textContent = `${sortedShips.length}`;
+    shipsList.innerHTML = '';
+    sortedShips.forEach(([ship, count]) => {
+      const li = document.createElement('li');
+      li.className = 'list-item';
+      li.innerHTML = `<span class="li-dot cyan"></span><span class="li-name cyan">${ship}</span><span class="li-count">${count} session${count>1?'s':''}</span>`;
+      shipsList.appendChild(li);
+    });
+  }
+
+  // ── Mission types ──
+  function renderMissionTypes(sessions) {
+    const mtypeMap = {};
+    sessions.forEach(s => s.missionTypes.forEach(t => { mtypeMap[t] = (mtypeMap[t]||0)+1; }));
+    const mtList   = document.getElementById('mission-types-list');
+    const sortedMT = Object.entries(mtypeMap).sort((a,b) => b[1]-a[1]);
+    mtList.innerHTML = '';
+    if (sortedMT.length) {
+      sortedMT.forEach(([type, count]) => {
+        const li = document.createElement('li');
+        li.className = 'list-item';
+        const friendly = type.replace(/_/g,' ').replace(/InterSec\s*/i,'').replace(/Nyx\s*/i,'').trim();
+        li.innerHTML = `<span class="li-dot" style="background:var(--orange);box-shadow:0 0 4px var(--orange)"></span><span class="li-name">${friendly}</span><span class="li-count">${count}</span>`;
+        mtList.appendChild(li);
+      });
+    } else {
+      mtList.innerHTML = '<div class="empty">No mission type data</div>';
+    }
+  }
+
+  // ── Mining ──
+  function renderMining(sessions) {
+    const mineralTotal = {}, trophyTotal = {}, refineryTotal = {};
+    sessions.forEach(s => {
+      Object.entries(s.minerals).forEach(([k,v]) => { mineralTotal[k]=(mineralTotal[k]||0)+v; });
+      Object.entries(s.trophies).forEach(([k,v]) => { trophyTotal[k]=(trophyTotal[k]||0)+v; });
+      Object.entries(s.refinery).forEach(([k,v]) => { refineryTotal[k]=(refineryTotal[k]||0)+v; });
+    });
+    const hasMining = Object.keys(mineralTotal).length > 0 || Object.keys(trophyTotal).length > 0;
+    const miningPanel = document.getElementById('mining-panel');
+    if (hasMining) {
+      miningPanel.style.display = 'block';
+      const grid = document.getElementById('mineral-grid');
+      grid.innerHTML = '';
+      const allMinerals = { ...mineralTotal, ...trophyTotal };
+      Object.entries(allMinerals).sort((a,b) => b[1]-a[1]).forEach(([name, count]) => {
+        const isTrophy = Object.keys(trophyTotal).includes(name);
+        const cell = document.createElement('div');
+        cell.className = 'mineral-cell';
+        cell.innerHTML = `<div class="mc-name">${isTrophy ? '🏆 ' : '💎 '}${name}</div><div class="mc-count">${count}</div><div class="mc-sub">${isTrophy ? 'trophy' : 'gem'}</div>`;
+        grid.appendChild(cell);
+      });
+      const refRow = document.getElementById('refinery-row');
+      refRow.innerHTML = Object.entries(refineryTotal).length
+        ? `<span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);margin-right:8px">REFINERY COMPLETIONS:</span>` +
+          Object.entries(refineryTotal).map(([loc, count]) => `<span class="ref-badge">${loc}: ${count}</span>`).join('')
+        : '';
+    } else {
+      miningPanel.style.display = 'none';
+    }
+  }
+
+  // ── Blueprints (static, all-time) ──
+  function renderBlueprints(allBPs, seenBPNames, uniqueBPCount, bpSessionCount) {
+    const bpList = document.getElementById('bp-list');
+    bpList.innerHTML = '';
+    document.getElementById('bp-count').textContent =
+      uniqueBPCount === allBPs.length
+        ? `${uniqueBPCount}`
+        : `${uniqueBPCount} unique / ${allBPs.length} total`;
+
+    window._exportBPNames = [...seenBPNames];
+    document.getElementById('export-bp-btn').style.display = uniqueBPCount > 0 ? 'inline-block' : 'none';
+
+    if (allBPs.length) {
+      [...allBPs].reverse().forEach(({ bp, date, isNew }) => {
+        const li = document.createElement('li');
+        li.className = 'list-item' + (isNew ? '' : ' bp-dupe');
+        li.innerHTML = `<span class="li-dot gold" style="${isNew?'':'opacity:.4'}"></span><span class="li-name gold">${bp}</span><span class="li-date">${date}${isNew ? '' : ' ·dupe'}</span>`;
+        bpList.appendChild(li);
+      });
+    } else {
+      bpList.innerHTML = '<div class="empty">No blueprints recorded</div>';
+    }
+
+    // Armor set progress (all-time)
+    const ARMOR_SLOTS = ['Core','Helmet','Arms','Legs','Backpack','Undersuit'];
+    const armorSets   = {};
+    seenBPNames.forEach(name => {
+      const parts   = name.split(' ');
+      const slotIdx = parts.findIndex(p => ARMOR_SLOTS.includes(p));
+      if (slotIdx > 0) {
+        const setName = parts.slice(0, slotIdx).join(' ');
+        if (!armorSets[setName]) armorSets[setName] = new Set();
+        armorSets[setName].add(parts[slotIdx]);
+      }
+    });
+    const setPanel = document.getElementById('set-panel');
+    const setGrid  = document.getElementById('set-grid');
+    const setNames = Object.keys(armorSets).sort();
+    if (setNames.length) {
+      setPanel.style.display = 'block';
+      document.getElementById('set-count').textContent = `${setNames.length} set${setNames.length!==1?'s':''}`;
+      setGrid.innerHTML = '';
+      setNames.forEach(setName => {
+        const have = armorSets[setName];
+        const card = document.createElement('div');
+        card.className = 'set-card';
+        const pct   = Math.round((have.size / ARMOR_SLOTS.length) * 100);
+        const slots = ARMOR_SLOTS.map(s =>
+          `<span class="slot-badge ${have.has(s) ? 'slot-have' : 'slot-miss'}">${have.has(s) ? '✓' : '✗'} ${s}</span>`
+        ).join('');
+        card.innerHTML = `<div class="set-name">${setName} <span style="font-size:10px;color:var(--text-dim);font-family:'Share Tech Mono',monospace">${pct}%</span></div><div class="set-slots">${slots}</div>`;
+        setGrid.appendChild(card);
+      });
+    } else {
+      setPanel.style.display = 'none';
+    }
+  }
+}
+</script>
+</body>
+</html>
