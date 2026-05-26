@@ -964,6 +964,10 @@ function renderDashboard(_sessions) {
   // ── Chart tab state (must be declared before rerender calls renderChart) ──
   let chartView = 'session';
 
+  // ── Pool filter state (must be declared before rerender calls renderMissionPools) ──
+  let poolFilterIncomplete = true;
+  let poolFilterComplete   = true;
+
   // ── Initial reactive render ──
   rerender();
   document.querySelectorAll('.chart-tab').forEach(btn => {
@@ -1260,9 +1264,6 @@ function renderDashboard(_sessions) {
   }
 
   // ── Mission Blueprint Pools ──
-  let poolFilterIncomplete = true;
-  let poolFilterComplete   = true;
-
   function renderMissionPools() {
     const panel    = document.getElementById('pools-panel');
     const noData   = document.getElementById('pools-no-data');
