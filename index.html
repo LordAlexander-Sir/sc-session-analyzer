@@ -1065,7 +1065,7 @@ function renderDashboard(_sessions) {
     renderMissionTypes(sessions);
     renderCombat(sessions);
     renderMining(sessions);
-    renderParty(sessions);
+    renderParty(allSessions);   // always all-time, like blueprints
     renderMissionPools();
   }
   rerenderFn = rerender;  // expose at module level so autoLoad/processFiles can trigger a re-render
