@@ -968,6 +968,9 @@ function renderDashboard(_sessions) {
   let poolFilterIncomplete = true;
   let poolFilterComplete   = true;
 
+  // ── Combat build threshold (must be declared before rerender calls renderCombat) ──
+  const LAST_COMBAT_BUILD = 10591185;
+
   // ── Initial reactive render ──
   rerender();
   document.querySelectorAll('.chart-tab').forEach(btn => {
@@ -1415,8 +1418,6 @@ function renderDashboard(_sessions) {
 
   // ── Combat panel ──
   // CIG removed CActor::Kill + CVehicle::OnAdvanceDestroyLevel from logs after build 10591185 (patch 4.3.2)
-  const LAST_COMBAT_BUILD = 10591185;
-
   function renderCombat(sessions) {
     const ct = { pveKills:0, pvpKills:0, deaths:0, suicides:0, fpsPveKills:0, fpsPvpKills:0, fpsDeaths:0 };
     const wTot = {}, sTot = {};
