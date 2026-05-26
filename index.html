@@ -1304,6 +1304,7 @@ function renderDashboard(_sessions) {
         return { name, bps, haveCount, total, pct, complete: haveCount === total };
       })
       .filter(p => p.total > 0)
+      .filter(p => !p.name.includes('UNINITIALIZED'))   // filter junk API entries
       .filter(p => (p.complete && poolFilterComplete) || (!p.complete && poolFilterIncomplete))
       .sort((a, b) => {
         if (a.complete !== b.complete) return a.complete ? 1 : -1; // incomplete first
@@ -1325,7 +1326,7 @@ function renderDashboard(_sessions) {
 
       card.innerHTML = `
         <div class="pool-card-hd">
-          <span class="pool-name" title="${name}">${name}</span>
+          <span class="pool-name" title="${name}">${name.replace(/\[([^\]]+)\]/g, '<span style="opacity:.55;font-style:italic">[$1]</span>')}</span>
           <span class="pool-prog"><span class="done">${haveCount}</span> / ${total} &nbsp;${pct}%</span>
         </div>
         <div class="pool-bar-wrap"><div class="pool-bar" style="width:${pct}%"></div></div>
