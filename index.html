@@ -3,207 +3,286 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self' https://api.star-citizen.wiki; base-uri 'none'; form-action 'none'">
 <title>SC Session Analyzer — LordAlexander</title>
+<script>if(localStorage.getItem('sc-theme')==='dark')document.documentElement.setAttribute('data-theme','dark')</script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&family=Exo+2:wght@200;300;400;500&display=swap');
 
 :root {
-  --bg: #05070e;
-  --surface: #090d1a;
-  --surface2: #0d1225;
-  --border: #182038;
-  --border2: #1e2d52;
-  --cyan: #00d4ff;
-  --cyan-dim: rgba(0,212,255,0.1);
-  --cyan-glow: 0 0 20px rgba(0,212,255,0.35);
-  --orange: #ff7730;
-  --orange-dim: rgba(255,119,48,0.1);
-  --green: #2dff9a;
-  --green-dim: rgba(45,255,154,0.08);
-  --red: #ff3355;
-  --red-dim: rgba(255,51,85,0.1);
-  --gold: #ffc844;
-  --gold-dim: rgba(255,200,68,0.1);
-  --purple: #a855f7;
-  --purple-dim: rgba(168,85,247,0.1);
-  --text: #8faabf;
-  --text-dim: #3d5570;
-  --text-bright: #ddeeff;
+  --bg: #f1f5f9;
+  --surface: #ffffff;
+  --surface2: #f8fafc;
+  --border: #e2e8f0;
+  --border2: #cbd5e1;
+  --cyan: #2563eb;
+  --cyan-dim: rgba(37,99,235,0.08);
+  --cyan-glow: 0 2px 8px rgba(37,99,235,0.2);
+  --orange: #d97706;
+  --orange-dim: rgba(217,119,6,0.1);
+  --green: #16a34a;
+  --green-dim: rgba(22,163,74,0.08);
+  --red: #dc2626;
+  --red-dim: rgba(220,38,38,0.08);
+  --gold: #d97706;
+  --gold-dim: rgba(217,119,6,0.1);
+  --purple: #7c3aed;
+  --purple-dim: rgba(124,58,237,0.08);
+  --text: #334155;
+  --text-dim: #94a3b8;
+  --text-bright: #0f172a;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.05);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.08);
+  --bar-n1: rgba(37,99,235,.55);  --bar-n2: rgba(37,99,235,.1);
+  --bar-m1: rgba(22,163,74,.6);   --bar-m2: rgba(22,163,74,.1);
+  --bar-c1: rgba(220,38,38,.55);  --bar-c2: rgba(220,38,38,.08);
+  --bar-i1: rgba(217,119,6,.55);  --bar-i2: rgba(217,119,6,.08);
+}
+
+[data-theme="dark"] {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface2: #263347;
+  --border: #2d3f56;
+  --border2: #3b5270;
+  --cyan: #60a5fa;
+  --cyan-dim: rgba(96,165,250,0.12);
+  --cyan-glow: 0 0 16px rgba(96,165,250,0.2);
+  --orange: #fb923c;
+  --orange-dim: rgba(251,146,60,0.12);
+  --green: #4ade80;
+  --green-dim: rgba(74,222,128,0.1);
+  --red: #f87171;
+  --red-dim: rgba(248,113,113,0.1);
+  --gold: #fbbf24;
+  --gold-dim: rgba(251,191,36,0.12);
+  --purple: #a78bfa;
+  --purple-dim: rgba(167,139,250,0.12);
+  --text: #94a3b8;
+  --text-dim: #475569;
+  --text-bright: #f1f5f9;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.25);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.3);
+  --bar-n1: rgba(96,165,250,.65);  --bar-n2: rgba(96,165,250,.12);
+  --bar-m1: rgba(74,222,128,.65);  --bar-m2: rgba(74,222,128,.12);
+  --bar-c1: rgba(248,113,113,.65); --bar-c2: rgba(248,113,113,.1);
+  --bar-i1: rgba(251,191,36,.6);   --bar-i2: rgba(251,191,36,.1);
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
 
-body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;font-weight:300;min-height:100vh;overflow-x:hidden}
-
-/* scanlines */
-body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 4px);pointer-events:none;z-index:9999}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:400;min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 
 .wrap{max-width:1240px;margin:0 auto;padding:36px 20px 80px;position:relative}
 
+/* ── THEME TOGGLE ── */
+.theme-toggle{position:absolute;top:0;right:0;background:var(--surface);border:1px solid var(--border2);color:var(--text-dim);font-size:15px;padding:5px 12px;cursor:pointer;border-radius:8px;transition:all .2s;line-height:1;box-shadow:var(--shadow-sm)}
+.theme-toggle:hover{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim)}
+
 /* ── HEADER ── */
-header{text-align:center;margin-bottom:44px;position:relative}
-.logo{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:clamp(30px,6vw,56px);letter-spacing:.14em;text-transform:uppercase;color:var(--text-bright);text-shadow:0 0 40px rgba(0,212,255,.55),0 0 80px rgba(0,212,255,.2);line-height:1}
+header{text-align:center;margin-bottom:40px;position:relative}
+.logo{font-weight:800;font-size:clamp(28px,6vw,52px);letter-spacing:-.02em;color:var(--text-bright);line-height:1}
 .logo span{color:var(--cyan)}
-.logo-sub{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.35em;color:var(--text-dim);text-transform:uppercase;margin-top:6px}
-.header-rule{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--cyan) 30%,var(--cyan) 70%,transparent);margin-top:20px;opacity:.3}
+.logo-sub{font-size:11px;letter-spacing:.1em;color:var(--text-dim);text-transform:uppercase;margin-top:8px;font-weight:400}
+.header-rule{width:60px;height:3px;background:var(--cyan);border-radius:2px;margin:16px auto 0;opacity:.7}
 
 /* ── DROP ZONE / TUTORIAL ── */
-#drop-zone{border:1px solid var(--border2);border-radius:4px;padding:40px 24px;text-align:center;cursor:pointer;background:var(--surface);transition:all .25s;margin-bottom:32px;position:relative;overflow:hidden}
-#drop-zone::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(0,212,255,.03) 0%,transparent 65%);pointer-events:none}
-#drop-zone:hover,#drop-zone.drag-over{border-color:var(--cyan);box-shadow:var(--cyan-glow),inset 0 0 40px rgba(0,212,255,.03)}
-.drop-icon{font-size:42px;display:block;margin-bottom:14px;filter:drop-shadow(0 0 10px rgba(0,212,255,.5))}
-.drop-title{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:19px;letter-spacing:.08em;color:var(--text-bright);text-transform:uppercase;margin-bottom:20px}
-.btn{display:inline-block;margin-top:18px;padding:9px 28px;background:transparent;border:1px solid var(--cyan);color:var(--cyan);font-family:'Rajdhani',sans-serif;font-weight:600;font-size:12px;letter-spacing:.22em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .2s}
-.btn:hover{background:var(--cyan-dim);box-shadow:var(--cyan-glow)}
+#drop-zone{border:2px dashed var(--border2);border-radius:12px;padding:40px 24px;text-align:center;cursor:pointer;background:var(--surface);transition:all .2s;margin-bottom:24px;box-shadow:var(--shadow-sm)}
+#drop-zone:hover,#drop-zone.drag-over{border-color:var(--cyan);border-style:solid;background:var(--cyan-dim);box-shadow:var(--shadow-md)}
+.drop-icon{font-size:40px;display:block;margin-bottom:12px}
+.drop-title{font-weight:700;font-size:18px;color:var(--text-bright);margin-bottom:20px}
+.btn{display:inline-block;margin-top:16px;padding:10px 26px;background:var(--cyan);border:none;color:#fff;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:600;font-size:13px;letter-spacing:.02em;cursor:pointer;border-radius:8px;transition:all .2s;box-shadow:var(--shadow-sm)}
+.btn:hover{opacity:.9;box-shadow:var(--shadow-md);transform:translateY(-1px)}
 #file-input{display:none}
 
 /* Tutorial steps */
 .tut-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 auto 20px;text-align:left}
 @media(max-width:640px){.tut-steps{grid-template-columns:1fr}}
-.tut-step{background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:14px 16px}
-.tut-num{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:28px;color:var(--cyan);opacity:.4;line-height:1;margin-bottom:4px}
-.tut-head{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-bright);margin-bottom:6px}
-.tut-body{font-size:11px;color:var(--text-dim);line-height:1.7}
-.tut-body code{font-family:'Share Tech Mono',monospace;color:var(--cyan);background:var(--cyan-dim);padding:2px 7px;border-radius:2px;font-size:10px;word-break:break-all}
-.tut-tip{font-size:10px;color:var(--orange);margin-top:5px;font-family:'Share Tech Mono',monospace}
-.tut-or{display:flex;align-items:center;gap:12px;margin:16px auto 0;max-width:460px;color:var(--text-dim);font-size:11px}
+.tut-step{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px 18px}
+.tut-num{font-weight:800;font-size:30px;color:var(--cyan);opacity:.25;line-height:1;margin-bottom:6px}
+.tut-head{font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-bright);margin-bottom:8px}
+.tut-body{font-size:12px;color:var(--text-dim);line-height:1.7}
+.tut-body code{font-family:'Consolas','Courier New',monospace;color:var(--cyan);background:var(--cyan-dim);padding:2px 7px;border-radius:4px;font-size:11px;word-break:break-all}
+.tut-tip{font-size:11px;color:var(--orange);margin-top:6px;font-weight:500}
+.tut-or{display:flex;align-items:center;gap:12px;margin:16px auto 0;max-width:460px;color:var(--text-dim);font-size:12px}
 .tut-or::before,.tut-or::after{content:'';flex:1;height:1px;background:var(--border)}
 
-.privacy-bar{display:flex;align-items:center;gap:10px;background:rgba(45,255,154,.06);border:1px solid rgba(45,255,154,.15);border-radius:3px;padding:10px 16px;margin-bottom:32px;font-size:11px;color:var(--green);font-family:'Share Tech Mono',monospace;letter-spacing:.05em}
+.privacy-bar{display:flex;align-items:center;gap:10px;background:var(--cyan-dim);border:1px solid var(--border);border-radius:8px;padding:10px 16px;margin-bottom:24px;font-size:12px;color:var(--cyan);font-weight:500}
 
 /* ── DASHBOARD ── */
 #dashboard{display:none}
 
-.dash-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)}
-.dash-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:20px;letter-spacing:.1em;color:var(--text-bright);text-transform:uppercase}
-.dash-meta{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-dim);margin-left:10px;font-weight:400}
-.reset-btn{background:transparent;border:1px solid var(--border2);color:var(--text-dim);font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.1em;padding:6px 14px;cursor:pointer;border-radius:2px;transition:all .2s;text-transform:uppercase}
-.reset-btn:hover{border-color:var(--text-dim);color:var(--text)}
+.dash-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:14px;border-bottom:2px solid var(--border)}
+.dash-title{font-weight:700;font-size:18px;letter-spacing:-.01em;color:var(--text-bright)}
+.dash-meta{font-family:'Consolas','Courier New',monospace;font-size:11px;color:var(--text-dim);margin-left:10px;font-weight:400}
+.reset-btn{background:var(--surface);border:1px solid var(--border2);color:var(--text-dim);font-size:12px;padding:7px 16px;cursor:pointer;border-radius:8px;transition:all .2s;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;box-shadow:var(--shadow-sm)}
+.reset-btn:hover{border-color:var(--cyan);color:var(--cyan)}
 
 /* ── VERSION FILTER ── */
-.ver-filter-wrap{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.vf-label{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-dim);white-space:nowrap;margin-right:4px}
-.vf-quick{background:transparent;border:1px solid var(--border2);color:var(--text-dim);font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.1em;padding:4px 12px;cursor:pointer;border-radius:2px;transition:all .15s;text-transform:uppercase;white-space:nowrap}
+.ver-filter-wrap{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;box-shadow:var(--shadow-sm)}
+.vf-label{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);white-space:nowrap;margin-right:4px}
+.vf-quick{background:transparent;border:1px solid var(--border2);color:var(--text-dim);font-size:11px;font-weight:500;padding:4px 14px;cursor:pointer;border-radius:20px;transition:all .15s;white-space:nowrap}
 .vf-quick:hover{border-color:var(--cyan);color:var(--cyan)}
-.vf-quick.active{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim)}
+.vf-quick.active{border-color:var(--cyan);color:#fff;background:var(--cyan)}
+.vf-clear{background:transparent;border:1px solid var(--border2);color:var(--text-dim);font-size:11px;font-weight:500;padding:4px 14px;cursor:pointer;border-radius:20px;transition:all .15s;white-space:nowrap}
+.vf-clear:hover{border-color:var(--red);color:var(--red)}
 .vf-divider{width:1px;height:16px;background:var(--border2);flex-shrink:0}
-.vf-patch{background:transparent;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.08em;padding:4px 10px;cursor:pointer;border-radius:2px;transition:opacity .15s;text-transform:uppercase;border:1px solid transparent}
-.vf-patch.inactive{opacity:.3}
-.vf-note{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--gold);opacity:.7;margin-left:auto;white-space:nowrap}
+.vf-patch{background:transparent;font-family:'Consolas','Courier New',monospace;font-size:10px;letter-spacing:.05em;padding:4px 10px;cursor:pointer;border-radius:4px;transition:opacity .15s;border:1px solid transparent}
+.vf-patch.inactive{opacity:.35}
+.vf-note{font-size:10px;color:var(--gold);font-weight:500;margin-left:auto;white-space:nowrap}
 
 /* ── STAT CARDS ── */
 .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:14px}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:16px 16px 14px;position:relative;overflow:hidden;opacity:0;animation:fadeUp .45s ease forwards}
-.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
-.stat-card.c-cyan::after{background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
-.stat-card.c-orange::after{background:var(--orange);box-shadow:0 0 10px var(--orange)}
-.stat-card.c-green::after{background:var(--green);box-shadow:0 0 10px var(--green)}
-.stat-card.c-gold::after{background:var(--gold);box-shadow:0 0 10px var(--gold)}
-.stat-card.c-red::after{background:var(--red);box-shadow:0 0 10px var(--red)}
-.stat-card.c-purple::after{background:var(--purple);box-shadow:0 0 10px var(--purple)}
-.s-label{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px}
-.s-val{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:clamp(22px,3.5vw,34px);line-height:1;margin-bottom:3px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 18px 14px;position:relative;overflow:hidden;opacity:0;animation:fadeUp .4s ease forwards;box-shadow:var(--shadow-sm)}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0}
+.stat-card.c-cyan::after{background:var(--cyan)}
+.stat-card.c-orange::after{background:var(--orange)}
+.stat-card.c-green::after{background:var(--green)}
+.stat-card.c-gold::after{background:var(--gold)}
+.stat-card.c-red::after{background:var(--red)}
+.stat-card.c-purple::after{background:var(--purple)}
+.s-label{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px}
+.s-val{font-weight:700;font-size:clamp(22px,3.5vw,32px);line-height:1;margin-bottom:4px}
 .stat-card.c-cyan .s-val{color:var(--cyan)}
 .stat-card.c-orange .s-val{color:var(--orange)}
 .stat-card.c-green .s-val{color:var(--green)}
 .stat-card.c-gold .s-val{color:var(--gold)}
 .stat-card.c-red .s-val{color:var(--red)}
 .stat-card.c-purple .s-val{color:var(--purple)}
-.s-sub{font-size:10px;color:var(--text-dim)}
+.s-sub{font-size:11px;color:var(--text-dim)}
 
 /* ── PANELS ── */
-.panel{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:18px 20px;margin-bottom:12px;opacity:0;animation:fadeUp .45s ease .1s forwards}
-.panel-hd{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--cyan);margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.panel-hd::before{content:'';display:inline-block;width:14px;height:1px;background:var(--cyan)}
-.panel-hd .count{color:var(--text-dim);font-size:9px;margin-left:auto}
-.panel-hd .alltime-badge{font-size:8px;color:var(--gold);opacity:.7;background:var(--gold-dim);border:1px solid rgba(255,200,68,.2);padding:1px 7px;border-radius:2px;letter-spacing:.1em}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px 22px;margin-bottom:12px;opacity:0;animation:fadeUp .4s ease .08s forwards;box-shadow:var(--shadow-sm)}
+.panel-hd{font-weight:600;font-size:13px;color:var(--text-bright);margin-bottom:14px;display:flex;align-items:center;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.panel-hd .count{color:var(--text-dim);font-size:11px;margin-left:auto;background:var(--surface2);padding:1px 8px;border-radius:10px;font-weight:400;border:1px solid var(--border)}
+.panel-hd .alltime-badge{font-size:9px;color:var(--gold);background:var(--gold-dim);padding:2px 9px;border-radius:20px;font-weight:600;letter-spacing:.05em}
 
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
 .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
 @media(max-width:800px){.two-col,.three-col{grid-template-columns:1fr}}
 
 /* ── CHART ── */
-.bar-chart{display:flex;align-items:flex-end;gap:3px;height:90px;width:100%;overflow-x:auto;padding-bottom:2px}
-.bar-col{flex:1;min-width:20px;max-width:40px;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end;cursor:pointer;position:relative}
-.bar{width:100%;border-radius:1px 1px 0 0;min-height:2px;transition:opacity .15s;position:relative}
-.bar.normal{background:linear-gradient(to top,rgba(0,212,255,.8),rgba(0,212,255,.2))}
-.bar.missions{background:linear-gradient(to top,rgba(45,255,154,.9),rgba(45,255,154,.2))}
-.bar.crashed{background:linear-gradient(to top,rgba(255,51,85,.8),rgba(255,51,85,.2))}
-.bar.mining{background:linear-gradient(to top,rgba(255,200,68,.85),rgba(255,200,68,.2))}
-.bar:hover{opacity:.7}
-.bar-lbl{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--text-dim);white-space:nowrap;transform:rotate(-45deg) translateX(-4px);transform-origin:top right;height:16px;display:flex;align-items:center}
-.chart-tab{background:transparent;border:1px solid var(--border2);color:var(--text-dim);font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.08em;padding:3px 10px;cursor:pointer;border-radius:2px;transition:all .15s;text-transform:uppercase}
+.bar-chart{display:flex;align-items:flex-end;gap:3px;height:100px;width:100%;overflow-x:auto;padding-bottom:2px}
+.bar-col{flex:1;min-width:18px;max-width:44px;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end;cursor:pointer;position:relative}
+.bar{width:100%;border-radius:3px 3px 0 0;min-height:2px;transition:opacity .15s;position:relative}
+.bar.normal{background:linear-gradient(to top,var(--bar-n1),var(--bar-n2))}
+.bar.missions{background:linear-gradient(to top,var(--bar-m1),var(--bar-m2))}
+.bar.crashed{background:linear-gradient(to top,var(--bar-c1),var(--bar-c2))}
+.bar.mining{background:linear-gradient(to top,var(--bar-i1),var(--bar-i2))}
+.bar:hover{opacity:.75}
+.bar-lbl{font-family:'Consolas','Courier New',monospace;font-size:7px;color:var(--text-dim);white-space:nowrap;transform:rotate(-45deg) translateX(-4px);transform-origin:top right;height:16px;display:flex;align-items:center}
+.chart-tab{background:transparent;border:1px solid var(--border2);color:var(--text-dim);font-size:11px;font-weight:500;padding:5px 14px;cursor:pointer;border-radius:20px;transition:all .15s}
 .chart-tab.active{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim)}
-.chart-legend{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap}
-.leg-item{display:flex;align-items:center;gap:5px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim)}
-.leg-dot{width:8px;height:8px;border-radius:1px}
+.chart-legend{display:flex;gap:16px;margin-top:12px;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-dim)}
+.leg-dot{width:8px;height:8px;border-radius:2px}
 
 /* ── SESSION TABLE ── */
-.session-tbl{width:100%;border-collapse:collapse;font-size:11px}
-.session-tbl th{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-dim);text-align:left;padding:0 8px 8px 0;border-bottom:1px solid var(--border)}
-.session-tbl td{padding:7px 8px 7px 0;border-bottom:1px solid rgba(24,32,56,.5);vertical-align:middle}
+.session-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.session-tbl th{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--border)}
+.session-tbl td{padding:8px 10px 8px 0;border-bottom:1px solid var(--border);vertical-align:middle}
 .session-tbl tr:last-child td{border-bottom:none}
-.session-tbl tr:hover td{background:rgba(0,212,255,.02)}
-.td-date{font-family:'Share Tech Mono',monospace;color:var(--text-dim);font-size:10px;white-space:nowrap}
-.td-dur{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:15px;color:var(--cyan);white-space:nowrap}
-.td-patch{font-family:'Share Tech Mono',monospace;font-size:9px;padding:2px 6px;border-radius:2px;white-space:nowrap}
-.patch-47{background:rgba(168,85,247,.12);color:var(--purple);border:1px solid rgba(168,85,247,.2)}
-.patch-48{background:rgba(0,212,255,.08);color:var(--cyan);border:1px solid rgba(0,212,255,.15)}
-.patch-48h{background:rgba(255,119,48,.1);color:var(--orange);border:1px solid rgba(255,119,48,.2)}
-.patch-481{background:rgba(45,255,154,.08);color:var(--green);border:1px solid rgba(45,255,154,.15)}
-.td-missions{color:var(--green);font-family:'Share Tech Mono',monospace;font-size:10px}
-.td-incap{color:var(--red);font-family:'Share Tech Mono',monospace;font-size:10px}
-.td-crash{color:var(--red);font-size:12px}
-.td-mining{color:var(--gold);font-size:11px}
-.td-ships{color:var(--text-dim);font-size:10px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.session-tbl tr:hover td{background:var(--surface2)}
+.td-date{font-family:'Consolas','Courier New',monospace;color:var(--text-dim);font-size:11px;white-space:nowrap}
+.td-dur{font-weight:700;font-size:15px;color:var(--cyan);white-space:nowrap}
+.td-patch{font-family:'Consolas','Courier New',monospace;font-size:10px;padding:2px 8px;border-radius:20px;white-space:nowrap;font-weight:500}
+.patch-47{background:var(--purple-dim);color:var(--purple)}
+.patch-48{background:var(--cyan-dim);color:var(--cyan)}
+.patch-48h{background:var(--orange-dim);color:var(--orange)}
+.patch-481{background:var(--green-dim);color:var(--green)}
+.td-missions{color:var(--green);font-family:'Consolas','Courier New',monospace;font-size:11px}
+.td-incap{color:var(--red);font-family:'Consolas','Courier New',monospace;font-size:11px}
+.td-crash{color:var(--red);font-size:13px}
+.td-mining{color:var(--gold);font-size:12px}
+.td-ships{color:var(--text-dim);font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* ── SCROLLABLE ── */
 .scrollable{max-height:300px;overflow-y:auto;padding-right:4px}
-.scrollable::-webkit-scrollbar{width:2px}
-.scrollable::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.scrollable::-webkit-scrollbar{width:4px}
+.scrollable::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 
 /* ── LIST ITEMS ── */
-.list-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(24,32,56,.4);font-size:11px}
+.list-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px}
 .list-item:last-child{border-bottom:none}
-.li-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.li-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .li-name{flex:1;color:var(--text)}
-.li-count{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);white-space:nowrap}
-.li-date{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);margin-left:auto;white-space:nowrap}
-
-.li-dot.gold{background:var(--gold);box-shadow:0 0 4px var(--gold)}
-.li-name.gold{color:var(--gold);font-family:'Share Tech Mono',monospace;font-size:10px}
-.li-dot.cyan{background:var(--cyan);box-shadow:0 0 4px var(--cyan)}
+.li-count{font-family:'Consolas','Courier New',monospace;font-size:10px;color:var(--text-dim);white-space:nowrap}
+.li-date{font-family:'Consolas','Courier New',monospace;font-size:10px;color:var(--text-dim);margin-left:auto;white-space:nowrap}
+.li-dot.gold{background:var(--gold)}
+.li-name.gold{color:var(--gold);font-family:'Consolas','Courier New',monospace;font-size:11px;font-weight:500}
+.li-dot.cyan{background:var(--cyan)}
 .li-name.cyan{color:var(--cyan)}
-.li-dot.green{background:var(--green);box-shadow:0 0 4px var(--green)}
-.li-dot.purple{background:var(--purple);box-shadow:0 0 4px var(--purple)}
+.li-dot.green{background:var(--green)}
+.li-dot.purple{background:var(--purple)}
 .li-name.purple{color:var(--purple)}
 
 /* ── MINING PANEL ── */
-.mineral-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}
-.mineral-cell{background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:10px 12px}
-.mc-name{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--purple);letter-spacing:.05em;margin-bottom:4px}
-.mc-count{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:22px;color:var(--text-bright)}
-.mc-sub{font-size:9px;color:var(--text-dim)}
-.refinery-row{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
-.ref-badge{background:var(--gold-dim);border:1px solid rgba(255,200,68,.2);border-radius:2px;padding:4px 10px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--gold)}
+.mineral-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.mineral-cell{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px}
+.mc-name{font-size:10px;font-weight:600;color:var(--purple);letter-spacing:.05em;margin-bottom:6px;text-transform:uppercase}
+.mc-count{font-weight:700;font-size:24px;color:var(--text-bright)}
+.mc-sub{font-size:10px;color:var(--text-dim)}
+.refinery-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.ref-badge{background:var(--gold-dim);border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:11px;color:var(--gold);font-weight:500}
 
 /* ── TOOLTIP ── */
-#tooltip{position:fixed;background:var(--surface2);border:1px solid var(--cyan);border-radius:2px;padding:7px 11px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--cyan);pointer-events:none;white-space:nowrap;z-index:9998;display:none;box-shadow:var(--cyan-glow)}
+#tooltip{position:fixed;background:var(--text-bright);border-radius:6px;padding:6px 12px;font-family:'Consolas','Courier New',monospace;font-size:11px;color:var(--surface);pointer-events:none;white-space:nowrap;z-index:9998;display:none;box-shadow:var(--shadow-md)}
 
 /* ── EMPTY ── */
-.empty{text-align:center;padding:28px;color:var(--text-dim);font-size:12px;font-family:'Share Tech Mono',monospace}
+.empty{text-align:center;padding:32px;color:var(--text-dim);font-size:13px}
 
 /* ── SET PROGRESS ── */
-.set-card{background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:10px 12px}
-.set-name{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:13px;color:var(--text-bright);margin-bottom:6px;letter-spacing:.05em}
+.set-card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px}
+.set-name{font-weight:600;font-size:13px;color:var(--text-bright);margin-bottom:8px;letter-spacing:.02em}
 .set-slots{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
-.slot-badge{font-family:'Share Tech Mono',monospace;font-size:9px;padding:2px 8px;border-radius:2px;white-space:nowrap}
-.slot-have{background:rgba(45,255,154,.1);color:var(--green);border:1px solid rgba(45,255,154,.25)}
-.slot-miss{background:rgba(255,51,85,.05);color:var(--text-dim);border:1px solid rgba(24,32,56,.8)}
-.bp-dupe{opacity:.45;font-style:italic}
+.slot-badge{font-size:10px;padding:3px 9px;border-radius:20px;white-space:nowrap;font-weight:500}
+.slot-have{background:var(--green-dim);color:var(--green)}
+.slot-miss{background:var(--surface);color:var(--text-dim);border:1px solid var(--border)}
+.bp-dupe{opacity:.4;font-style:italic}
+
+/* ── COMBAT PANEL ── */
+.combat-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:14px}
+.cc{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 12px}
+.cc-l{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim);margin-bottom:5px}
+.cc-v{font-weight:700;font-size:20px;color:var(--text-bright)}
+.cc-v.green{color:var(--green)}.cc-v.red{color:var(--red)}.cc-v.orange{color:var(--orange)}.cc-v.cyan{color:var(--cyan)}
+.cc-s{font-size:10px;color:var(--text-dim);margin-top:2px}
+.td-combat{font-family:'Consolas','Courier New',monospace;font-size:11px;white-space:nowrap}
+.mark-reset-btn{background:none;border:none;cursor:pointer;font-size:13px;padding:1px 4px;color:var(--border2);border-radius:3px;transition:color .15s;line-height:1;vertical-align:middle}
+.mark-reset-btn:hover{color:var(--orange)}
+.mark-reset-btn.is-reset{color:var(--orange)}
+.reset-chip{display:inline-block;font-size:8px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--orange);background:var(--orange-dim);border-radius:3px;padding:1px 5px;margin-left:6px;vertical-align:middle}
+tr.tr-reset td{border-top:2px solid var(--orange-dim)}
+tr.tr-reset td:first-child{border-left:3px solid var(--orange)}
+
+/* ── MISSION POOLS PANEL ── */
+.pool-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.pool-search{flex:1;min-width:180px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:12px;font-family:inherit}
+.pool-search:focus{outline:none;border-color:var(--cyan)}
+.pool-toggle{background:transparent;border:1px solid var(--border2);color:var(--text-dim);font-size:11px;padding:4px 12px;cursor:pointer;border-radius:20px;transition:all .15s;white-space:nowrap}
+.pool-toggle:hover{border-color:var(--cyan);color:var(--cyan)}
+.pool-toggle.active{border-color:var(--cyan);color:#fff;background:var(--cyan)}
+.pool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.pool-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.pool-card.complete{border-color:var(--green);border-left:3px solid var(--green)}
+.pool-card-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;cursor:pointer;user-select:none;gap:8px}
+.pool-card-hd:hover{background:var(--cyan-dim)}
+.pool-name{font-size:11px;font-weight:600;color:var(--text-bright);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pool-prog{font-size:10px;color:var(--text-dim);white-space:nowrap;flex-shrink:0}
+.pool-prog .done{color:var(--green);font-weight:700}
+.pool-bar-wrap{height:3px;background:var(--border);margin:0 12px 0}
+.pool-bar{height:3px;background:var(--green);border-radius:2px;transition:width .3s}
+.pool-body{padding:10px 12px;display:none;border-top:1px solid var(--border)}
+.pool-body.open{display:block}
+.pool-section-hd{font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px;margin-top:8px}
+.pool-section-hd:first-child{margin-top:0}
+.pool-bp-list{display:flex;flex-wrap:wrap;gap:4px}
+.pool-bp{font-size:10px;padding:2px 7px;border-radius:3px;white-space:nowrap}
+.pool-bp.have{background:var(--green-dim);color:var(--green);border:1px solid rgba(74,222,128,.2)}
+.pool-bp.need{background:var(--surface);color:var(--text-dim);border:1px solid var(--border)}
+.pool-hint{font-size:10px;color:var(--text-dim);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
 
 /* ── ANIMATIONS ── */
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
@@ -213,16 +292,18 @@ header{text-align:center;margin-bottom:44px;position:relative}
   <div class="logo">STAR <span>CITIZEN</span></div>
   <div class="logo-sub">// Multi-Session Log Analyzer — LordAlexander</div>
   <div class="header-rule"></div>
+  <button class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode">☀</button>
 </header>
 
 <div class="privacy-bar">
   <span>🔒</span>
-  <span>ALL PROCESSING IS LOCAL — files never leave your machine</span>
+  <span>ZERO EXTERNAL CONNECTIONS — log data is processed entirely in your browser. Nothing is transmitted, stored, or logged anywhere. Close the tab to clear everything.</span>
 </div>
 
 <div id="drop-zone">
   <span class="drop-icon">📂</span>
   <div class="drop-title">Load Your Session Logs</div>
+  <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">Also drop <strong>mission_pools.json</strong> to enable the Blueprint Pools tracker</div>
 
   <div class="tut-steps">
     <div class="tut-step">
@@ -293,12 +374,15 @@ header{text-align:center;margin-bottom:44px;position:relative}
     <div class="scrollable">
       <table class="session-tbl">
         <thead><tr>
+          <th style="width:28px"></th>
           <th>Date</th>
           <th>Duration</th>
           <th>Patch</th>
           <th>Missions</th>
           <th>BPs</th>
+          <th>Rewards</th>
           <th>Downs</th>
+          <th>Combat</th>
           <th>Status</th>
           <th>Type</th>
           <th>Ships</th>
@@ -345,11 +429,52 @@ header{text-align:center;margin-bottom:44px;position:relative}
     </div>
   </div>
 
+  <!-- Combat panel -->
+  <div class="panel" id="combat-panel" style="display:none">
+    <div class="panel-hd">⚔ Combat Summary <span id="combat-hd-note" style="display:none;font-size:10px;font-weight:400;color:var(--text-dim);margin-left:10px;letter-spacing:0"></span></div>
+    <div class="combat-row" id="combat-row"></div>
+    <div class="two-col" id="combat-lists">
+      <div>
+        <div style="font-size:10px;font-weight:600;letter-spacing:.06em;color:var(--text-dim);text-transform:uppercase;margin-bottom:8px">Top Weapons</div>
+        <ul id="weapons-list" style="list-style:none"></ul>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:600;letter-spacing:.06em;color:var(--text-dim);text-transform:uppercase;margin-bottom:8px">Ships Destroyed</div>
+        <ul id="ships-destroyed-list" style="list-style:none"></ul>
+      </div>
+    </div>
+    <div id="combat-note" style="display:none;font-size:11px;color:var(--text-dim);padding:10px 0 2px;margin-top:4px;border-top:1px solid var(--border)"></div>
+  </div>
+
   <!-- Mining panel -->
   <div class="panel" id="mining-panel" style="display:none">
     <div class="panel-hd">⛏ Mining Summary</div>
     <div class="mineral-grid" id="mineral-grid"></div>
     <div class="refinery-row" id="refinery-row"></div>
+  </div>
+
+  <!-- Mission Blueprint Pools panel -->
+  <div class="panel" id="pools-panel" style="display:none">
+    <div class="panel-hd">🎯 Mission Blueprint Pools <span class="count" id="pools-count"></span></div>
+    <div id="pools-no-data" style="display:none;text-align:center;padding:28px 16px;color:var(--text-dim)">
+      <div style="font-size:28px;margin-bottom:10px">📂</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px;color:var(--text)">mission_pools.json not loaded</div>
+      <div style="font-size:12px;line-height:1.6">
+        Drop <strong>mission_pools.json</strong> alongside your log files to enable this panel.<br>
+        The file is generated by <code>generate_mission_pools.py</code> and lives in the <code>sc-session-analyzer/</code> folder.
+      </div>
+    </div>
+    <div id="pools-data-wrap">
+      <div class="pool-toolbar">
+        <input class="pool-search" id="pool-search" type="text" placeholder="Search mission name…">
+        <button class="pool-toggle active" id="pool-toggle-incomplete">Show Incomplete</button>
+        <button class="pool-toggle active" id="pool-toggle-complete">Show Complete</button>
+      </div>
+      <div class="pool-grid" id="pool-grid"></div>
+      <div style="font-size:10px;color:var(--text-dim);margin-top:12px">
+        Blueprint ownership is determined from all loaded log files (all-time).
+      </div>
+    </div>
   </div>
 
 </div><!-- /dashboard -->
@@ -398,13 +523,19 @@ const R = {
   medbed:    /SHUDEvent.*?Added notification "Medical Bed:/gi,
   party:     /^<[^>]+>\s*([\w\d_]+) has joined the party/gim,
   ship:      /SHUDEvent.*?Added notification "You have joined channel '([^']+)'/gi,
+  shipOld:   /Found Ship with Unknown info: ([A-Z][A-Z0-9]+(?:_\S+)?) GEID:/gi,
   mineral:   /InventoryManagement.*?End Page Entity Class\[Harvestable_Mineral_1H_(\w+)\]/gi,
   trophy:    /InventoryManagement.*?End Page Entity Class\[Harvestable_Trophy_1H_(\w+)\]/gi,
-  refinery:  /SHUDEvent.*?Added notification "A Refinery Work Order has been Completed at ([^:]+):/gi,
-  mtype:     /generator name \[([^\]]+)\].*?contract \[([^\]]+)\]/gi,
+  refinery:  /^<([^>]+)>.*?SHUDEvent.*?Added notification "(?:A|(\d+)) Refinery Work Orders? (?:has|have) been Completed at ([^:]+):/gim,
+  scrip:      /^<([^>]+)>.*?SHUDEvent_OnNotification.*?Added notification "You've earned: (\d+) rewards/gim,
+  contractTs: /^<([^>]+)>.*?SHUDEvent.*?Added notification "Contract Complete:\s*([^"]+)/gim,
+  mtype:     /generator name \[([^\]]+)\].*?contract \[([^\]]*(?:<[^>]*>[^\]]*)*)\]/gi,
   fatal:     /FatalCollision.*?vehicle ([A-Z][^\s\[]+)/gi,
   gpucrash:  /GPU [Cc]rash/,
   normal:    /SystemQuit/,
+  actorStall:/<Actor stall>.*?Actor stall detected/i,
+  kill:      /<Actor Death> CActor::Kill: '([^']+)' \[\d+\] in zone '[^']+' killed by '([^']+)' \[\d+\] using '([^']+)' \[Class [^\]]+\] with damage type '([^']+)'/gi,
+  vdestroy:  /<Vehicle Destruction> CVehicle::OnAdvanceDestroyLevel: Vehicle '([^']+)' \[\d+\].*?driven by '([^']+)' \[\d+\] advanced from destroy level (\d+) to (\d+) caused by '([^']+)' \[\d+\] with '([^']+)'/gi,
   fname:     /Game_Build_(\d+)__(\d{2})_(\w+)_(\d{2})__(\d{2})_(\d{2})_(\d{2})_/,
 };
 
@@ -461,6 +592,84 @@ function re_all(pattern, text) {
 
 function dedup(arr) { return [...new Set(arr)]; }
 
+// ── Reset markers (persisted in localStorage) ──
+let resetSessions = new Set(JSON.parse(localStorage.getItem('sc-resets') || '[]'));
+function toggleReset(filename) {
+  if (resetSessions.has(filename)) resetSessions.delete(filename);
+  else resetSessions.add(filename);
+  localStorage.setItem('sc-resets', JSON.stringify([...resetSessions]));
+  rerenderFn();
+}
+
+// ── NPC / combat helpers ──
+const NPC_PFXS = ['PU_','AI_CRIM','AI_','_NPC_','NPC_','Criminal-Pilot','Security-','Pirate-','NPC_Archetypes','Kopion_','vlk_','vlk_adult','vlk_juvenile'];
+function isNPC(n) {
+  if (!n || n === 'unknown' || n === '<local>') return true;
+  if (NPC_PFXS.some(p => n.toLowerCase().startsWith(p.toLowerCase()))) return true;
+  if (n.length > 40) return true;
+  if ((n.match(/-/g)||[]).length >= 3) return true;
+  return false;
+}
+function cleanWeapon(w) {
+  w = w.replace(/_\d{10,}$/, '');           // strip trailing entity ID (13-digit suffix)
+  w = w.replace(/_ammo.*/i,'').replace(/_personal.*/i,'').replace(/_npc.*/i,'');
+  const m = w.match(/^[a-z]{2,6}_(.+)/i);   // strip manufacturer prefix
+  if (m) w = m[1];
+  w = w.replace(/_/g,' ').replace(/([a-z])([A-Z])/g,'$1 $2');
+  return w.replace(/\b\w/g, c => c.toUpperCase()).trim();
+}
+function extractShip(v) {
+  const m = v.match(/^[A-Z]{2,6}_([A-Za-z0-9]+)_/);
+  return m ? m[1].replace(/([a-z])([A-Z])/g,'$1 $2') : null;
+}
+// ── Scrip type classification ──
+// Fast hardcoded patterns (from wiki API descriptions) used synchronously during log parsing.
+// Any mission returning 'other' is queued for async wiki API lookup after initial render.
+const WIKI_MISSIONS_API = 'https://api.star-citizen.wiki/api/missions';
+const WIKI_HEADERS = { 'Accept': 'application/json', 'Accept-Language': 'en_EN' };
+const SCRIP_CACHE_KEY = 'sc-scrip-cache';
+let scripCache = JSON.parse(localStorage.getItem(SCRIP_CACHE_KEY) || '{}');
+
+function classifyScrip(mission) {
+  if (!mission) return 'other';
+  // Check localStorage cache first (populated by previous API lookups)
+  if (scripCache[mission]) return scripCache[mission];
+  // Hardcoded fast patterns derived from wiki API description text
+  if (/space patrol|headhunters|from mercs|eliminate annoyance|elite op|hunt some heads|guard .+ rivals|guard .+ costs|ambush op/i.test(mission)) return 'council';
+  if (/\bpatrol\b|level contract|combat gauntlet|\bambush\b|security (threat|patrol|sweep)|protect our client|return the favor|spring a trap|stand up to|prevent.+attack/i.test(mission)) return 'mg';
+  return 'other';
+}
+
+// Called after initial render — looks up any 'other' missions via the wiki API,
+// updates the cache, and triggers a re-render if any new types were discovered.
+async function enrichScripFromWiki(unknownMissions) {
+  if (!unknownMissions.size) return;
+  let updated = false;
+  for (const mission of unknownMissions) {
+    if (scripCache[mission] && scripCache[mission] !== 'other') continue; // already known
+    try {
+      const url = `${WIKI_MISSIONS_API}?filter[title]=${encodeURIComponent(mission)}&per_page=5`;
+      const resp = await fetch(url, { headers: WIKI_HEADERS });
+      if (!resp.ok) continue;
+      const data = await resp.json();
+      let type = 'other';
+      for (const m of (data.data || [])) {
+        const desc = (m.description || '').toLowerCase();
+        if (desc.includes('council scrip')) { type = 'council'; break; }
+        if (desc.includes('mg scrip'))      { type = 'mg';      break; }
+      }
+      if (type !== 'other' || !scripCache[mission]) {
+        scripCache[mission] = type;
+        updated = true;
+      }
+    } catch (_) { /* network unavailable — skip silently */ }
+  }
+  if (updated) {
+    localStorage.setItem(SCRIP_CACHE_KEY, JSON.stringify(scripCache));
+    rerenderFn(); // re-render now that we have better classifications
+  }
+}
+
 function parseLog(text, filename) {
   const tss = [];
   R.ts.lastIndex = 0;
@@ -480,10 +689,17 @@ function parseLog(text, filename) {
   const branch  = brm ? brm[1] : '?';
   const patch   = patchLabel(branch);
 
-  const gpuCrash = R.gpucrash.test(text);
-  const cleanExit = R.normal.test(text);
-  const crashed   = gpuCrash || !cleanExit;
-  const crashType = gpuCrash ? 'GPU Crash' : (!cleanExit ? 'Disconnect' : null);
+  const gpuCrash     = R.gpucrash.test(text);
+  const cleanExit    = R.normal.test(text);
+  const actorStallHit= R.actorStall.test(text);
+  // SystemQuit only exists from build 8779972 (3.21, Oct 2023) onward
+  // For older logs, absence of SystemQuit doesn't mean a crash occurred
+  const buildNum = parseInt(build) || 0;
+  const systemQuitReliable = buildNum === 0 || buildNum >= 8779972;
+  const crashed   = gpuCrash || (systemQuitReliable && !cleanExit);
+  const crashType = gpuCrash ? 'GPU Crash'
+    : (systemQuitReliable && !cleanExit) ? (actorStallHit ? 'Server Stall' : 'Disconnect')
+    : null;
 
   const bpNames          = dedup(re_all(R.bp, text).map(m => m[1].trim()));
   const missionsDone     = re_all(R.done, text).length;
@@ -491,12 +707,26 @@ function parseLog(text, filename) {
   const incaps           = re_all(R.incap, text).length;
   const medbeds          = re_all(R.medbed, text).length;
   const party            = dedup(re_all(R.party, text).map(m => m[1].trim()));
-  const ships            = dedup(
+  let ships = dedup(
     re_all(R.ship, text)
       .map(m => m[1])
       .filter(ch => ch.includes(' : '))
       .map(ch => ch.split(' : ')[0].trim())
   );
+  // Fallback for 3.17 era logs where the channel-join event didn't exist
+  if (!ships.length) {
+    const MFG = {AEGS:'Aegis',ANVL:'Anvil',DRAK:'Drake',MISC:'MISC',CRUS:'Crusader',
+      RSI:'RSI',ORIG:'Origin',BANU:'Banu',VNCL:'Vanduul',KRIG:'Kruger',MRAI:'Mirai',
+      CNOU:'Consolidated Outland',XIAN:"Xi'An",TMBL:'Tumbril',GRIN:'Greycat',
+      BEHR:'Behring',CRSR:'Crusader',ESPERIA:'Esperia',MISC:'MISC'};
+    ships = dedup(
+      re_all(R.shipOld, text).map(m => {
+        const parts = m[1].split('_');
+        const mfg = MFG[parts[0]] || parts[0];
+        return (mfg + ' ' + parts.slice(1).join(' ')).trim();
+      })
+    );
+  }
 
   const minerals = {}, trophies = {};
   re_all(R.mineral, text).forEach(m => {
@@ -510,13 +740,86 @@ function parseLog(text, filename) {
   const isMining = Object.keys(minerals).length > 0 || Object.keys(trophies).length > 0;
 
   const refinery = {};
+  const refineryTs = new Set();
   re_all(R.refinery, text).forEach(m => {
-    const loc = m[1].trim();
-    refinery[loc] = (refinery[loc] || 0) + 1;
+    const ts = m[1];
+    if (refineryTs.has(ts)) return;
+    refineryTs.add(ts);
+    const loc = m[3].trim();
+    const count = parseInt(m[2]) || 1;
+    refinery[loc] = (refinery[loc] || 0) + count;
   });
 
-  const missionTypes = dedup(re_all(R.mtype, text).map(m => m[2]));
+  const missionTypes = dedup(re_all(R.mtype, text).map(m =>
+    m[2].replace(/<[^>]+>/g, '').replace(/\[[^\]]*$/, '').trim()
+  ).filter(Boolean));
   const fatals       = dedup(re_all(R.fatal, text).map(m => m[1]));
+
+  // Build sorted list of Contract Complete events [timestamp, missionName]
+  // ISO timestamps sort correctly as strings, so we can binary-search for look-back.
+  const contractEvents = [];
+  re_all(R.contractTs, text).forEach(m => {
+    const ts   = m[1];
+    const name = m[2].replace(/<[^>]+>/g, '').trim();
+    contractEvents.push([ts, name]);
+  });
+  contractEvents.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+
+  // Parse reward notifications, classify scrip type.
+  // Rather than requiring exact millisecond match, find the most recent
+  // Contract Complete that fired at or before each reward notification.
+  // This handles the case where the two events differ by a few milliseconds.
+  const rewardBuckets = { mg: 0, council: 0, other: 0 };
+  const unknownMissions = new Set(); // missions classified 'other' — queued for wiki API lookup
+  re_all(R.scrip, text).forEach(m => {
+    const ts = m[1], count = parseInt(m[2]) || 0;
+    // Walk backward through sorted contract events to find closest one ≤ reward ts
+    let mission = '';
+    for (let i = contractEvents.length - 1; i >= 0; i--) {
+      if (contractEvents[i][0] <= ts) { mission = contractEvents[i][1]; break; }
+    }
+    const type = classifyScrip(mission);
+    rewardBuckets[type] += count;
+    if (type === 'other' && mission) unknownMissions.add(mission);
+  });
+  const rewardsEarned  = rewardBuckets.mg + rewardBuckets.council + rewardBuckets.other;
+  const rewardsMG      = rewardBuckets.mg;
+  const rewardsCouncil = rewardBuckets.council;
+
+  // ── Combat stats ──
+  const combat = { pveKills:0, pvpKills:0, deaths:0, suicides:0, fpsPveKills:0, fpsPvpKills:0, fpsDeaths:0 };
+  const weapons = {}, shipsDestroyed = {};
+
+  // FPS / on-foot kills — use CActor::Kill
+  // Skip VehicleDestruction (covered by vdestroy) and Crash (NPC pilots dying in their destroyed ship)
+  re_all(R.kill, text).forEach(m => {
+    const victim = m[1], killer = m[2], weapon = m[3], dmgType = m[4].toLowerCase();
+    if (dmgType === 'vehicledestruction' || dmgType === 'crash') return;
+    const npcV = isNPC(victim), npcK = isNPC(killer);
+    // Suicide: killer equals victim, OR explicit Suicide damage type
+    if (killer === victim || dmgType === 'suicide') { combat.suicides++; return; }
+    if (!npcK && npcV)       combat.fpsPveKills++;
+    else if (!npcK && !npcV) combat.fpsPvpKills++;
+    else if (npcK && !npcV)  combat.fpsDeaths++;
+    if (!npcK && weapon && weapon !== 'unknown') {
+      const w = cleanWeapon(weapon);
+      if (w) weapons[w] = (weapons[w]||0) + 1;
+    }
+  });
+
+  // Space / vehicle kills — use CVehicle::OnAdvanceDestroyLevel (full destructions only)
+  re_all(R.vdestroy, text).forEach(m => {
+    const vehicle = m[1], driver = m[2], toLvl = parseInt(m[4]), attacker = m[5];
+    if (toLvl < 2) return;
+    const npcD = isNPC(driver), npcA = isNPC(attacker);
+    if (!npcA && npcD)       combat.pveKills++;
+    else if (!npcA && !npcD) combat.pvpKills++;
+    else if (npcA && !npcD)  combat.deaths++;
+    if (!npcA) {
+      const sn = extractShip(vehicle);
+      if (sn) shipsDestroyed[sn] = (shipsDestroyed[sn]||0)+1;
+    }
+  });
 
   let startDate;
   const fm = R.fname.exec(filename);
@@ -533,22 +836,76 @@ function parseLog(text, filename) {
     crashed, crashType,
     bpNames, missionsDone, missionsAccepted, incaps, medbeds,
     party, ships, minerals, trophies, isMining, refinery,
-    missionTypes, fatals,
+    missionTypes, fatals, combat, weapons, shipsDestroyed,
+    rewardsEarned, rewardsMG, rewardsCouncil, unknownMissions,
   };
 }
 
-function processFiles(files) {
-  const logs = files.filter(f => f.name.toLowerCase().endsWith('.log'));
-  if (!logs.length) { alert('No .log files found.'); return; }
+let missionPools = null;   // loaded from mission_pools.json (auto-fetch on GitHub Pages, or drag-drop locally)
+let allSessions  = [];     // module-level session list; set by renderDashboard, read by autoLoad/processFiles
+let rerenderFn   = () => {}; // module-level proxy; points to renderDashboard's inner rerender once loaded
 
-  Promise.all(logs.map(f => new Promise(res => {
-    const r = new FileReader();
-    r.onload = e => res({ text: e.target.result, filename: f.name });
-    r.onerror = () => res(null);
-    r.readAsText(f);
-  }))).then(results => {
+// Auto-fetch mission_pools.json when served from a web server (GitHub Pages).
+// Silently skips if the file isn't present (local file:// use).
+async function autoLoadMissionPools() {
+  try {
+    const resp = await fetch('./mission_pools.json');
+    if (!resp.ok) return;
+    const data = await resp.json();
+    if (data.pools && data.total_pools !== undefined) {
+      missionPools = data;
+      console.log(`[analyzer] Auto-loaded mission_pools.json — ${data.total_pools} pools, game ver ${data.game_version}`);
+      if (allSessions.length) rerenderFn();
+    }
+  } catch (_) { /* silently ignore — user can still drag-drop the file manually */ }
+}
+autoLoadMissionPools();
+
+function processFiles(files) {
+  const logs  = files.filter(f => f.name.toLowerCase().endsWith('.log'));
+  const jsons = files.filter(f => f.name.toLowerCase().endsWith('.json'));
+
+  if (!logs.length && !jsons.length) { alert('No .log or .json files found.'); return; }
+
+  // Read all files in parallel (logs + optional JSON data files)
+  const allReads = [
+    ...logs.map(f => new Promise(res => {
+      const r = new FileReader();
+      r.onload  = e => res({ type: 'log',  text: e.target.result, filename: f.name });
+      r.onerror = () => res(null);
+      r.readAsText(f);
+    })),
+    ...jsons.map(f => new Promise(res => {
+      const r = new FileReader();
+      r.onload  = e => res({ type: 'json', text: e.target.result, filename: f.name });
+      r.onerror = () => res(null);
+      r.readAsText(f);
+    })),
+  ];
+
+  Promise.all(allReads).then(results => {
+    // ── Handle JSON data files ──
+    results.filter(r => r && r.type === 'json').forEach(({ text, filename }) => {
+      try {
+        const data = JSON.parse(text);
+        if (data.pools && data.total_pools !== undefined) {
+          missionPools = data;
+          console.log(`[analyzer] Loaded mission_pools.json — ${data.total_pools} pools, game ver ${data.game_version}`);
+        }
+      } catch (e) {
+        console.warn(`[analyzer] Could not parse ${filename}:`, e);
+      }
+    });
+
+    // ── Handle log files ──
+    if (!logs.length) {
+      // Only JSON files were dropped — re-render pools if dashboard is already showing
+      if (allSessions.length) rerenderFn();
+      return;
+    }
+
     const sessions = results
-      .filter(Boolean)
+      .filter(r => r && r.type === 'log')
       .map(({ text, filename }) => parseLog(text, filename))
       .filter(Boolean)
       .sort((a,b) => a.startMs - b.startMs);
@@ -561,13 +918,19 @@ function processFiles(files) {
       return true;
     });
     renderDashboard(unique);
+
+    // Async wiki enrichment for unknown scrip types
+    const allUnknown = new Set();
+    unique.forEach(s => (s.unknownMissions || new Set()).forEach(m => allUnknown.add(m)));
+    enrichScripFromWiki(allUnknown);
   });
 }
 
 // ════════════════════════════════════════════════════════════════════════════
 // renderDashboard — blueprints are always all-time; everything else is filtered
 // ════════════════════════════════════════════════════════════════════════════
-function renderDashboard(allSessions) {
+function renderDashboard(_sessions) {
+  allSessions = _sessions;  // update module-level so autoLoad/processFiles can read it
   dropZone.style.display  = 'none';
   dashboard.style.display = 'block';
 
@@ -641,6 +1004,16 @@ function renderDashboard(allSessions) {
       quickBtn('4.8 Season', () => new Set(patches.filter(p => !PRE_RESET_PATCHES.has(p))));
     }
 
+    const clearBtn = document.createElement('button');
+    clearBtn.className = 'vf-clear';
+    clearBtn.textContent = 'Clear All';
+    clearBtn.addEventListener('click', () => {
+      activePatches = new Set();
+      syncFilterUI();
+      rerender();
+    });
+    wrap.appendChild(clearBtn);
+
     const divider = document.createElement('span');
     divider.className = 'vf-divider';
     wrap.appendChild(divider);
@@ -651,11 +1024,8 @@ function renderDashboard(allSessions) {
       b.dataset.patch = p;
       b.textContent = p;
       b.addEventListener('click', () => {
-        if (activePatches.has(p)) {
-          if (activePatches.size > 1) activePatches.delete(p);
-        } else {
-          activePatches.add(p);
-        }
+        if (activePatches.has(p)) activePatches.delete(p);
+        else activePatches.add(p);
         syncFilterUI();
         rerender();
       });
@@ -689,9 +1059,12 @@ function renderDashboard(allSessions) {
     renderSessionTable(sessions);
     renderShips(sessions);
     renderMissionTypes(sessions);
+    renderCombat(sessions);
     renderMining(sessions);
     renderParty(sessions);
+    renderMissionPools();
   }
+  rerenderFn = rerender;  // expose at module level so autoLoad/processFiles can trigger a re-render
 
   function renderMeta(sessions) {
     const totalLoaded = allSessions.length;
@@ -719,6 +1092,9 @@ function renderDashboard(allSessions) {
     const totalIncaps  = sessions.reduce((s,x) => s + x.incaps, 0);
     const totalBeds    = sessions.reduce((s,x) => s + x.medbeds, 0);
     const totalCrashes = sessions.filter(x => x.crashed).length;
+    const totalRewards  = sessions.reduce((s,x) => s + (x.rewardsEarned||0), 0);
+    const totalMG       = sessions.reduce((s,x) => s + (x.rewardsMG||0), 0);
+    const totalCouncil  = sessions.reduce((s,x) => s + (x.rewardsCouncil||0), 0);
 
     const statRow = document.getElementById('stat-row');
     statRow.innerHTML = '';
@@ -728,9 +1104,12 @@ function renderDashboard(allSessions) {
       { label:'Longest Session', val: fmtDur(longestMs), sub:'single session',   cls:'c-cyan',   delay:.12  },
       { label:'Missions Done',   val: totalMiss,         sub:'contracts completed', cls:'c-green',  delay:.18  },
       { label:'Blueprints',      val: uniqueBPCount,     sub:`${allBPs.length} total · all-time`, cls:'c-gold', delay:.24 },
-      { label:'Times Downed',    val: totalIncaps,       sub:'incapacitations',  cls:'c-red',    delay:.30  },
-      { label:'Med Bed Uses',    val: totalBeds,         sub:'healings',         cls:'c-purple', delay:.36  },
-      { label:'GPU Crashes',     val: totalCrashes,      sub:`${Math.round(totalCrashes/sessions.length*100)}% of sessions`, cls:'c-red', delay:.42 },
+      { label:'Rewards Earned',  val: totalRewards > 0 ? totalRewards : '—',
+        sub: totalRewards > 0 ? `${totalMG} MG · ${totalCouncil} Council` : 'faction scrip & tokens',
+        cls:'c-purple', delay:.30 },
+      { label:'Times Downed',    val: totalIncaps,       sub:'incapacitations',  cls:'c-red',    delay:.36  },
+      { label:'Med Bed Uses',    val: totalBeds,         sub:'healings',         cls:'c-purple', delay:.42  },
+      { label:'Crashes / DC',    val: totalCrashes,      sub:`${Math.round(totalCrashes/sessions.length*100)}% of sessions`, cls:'c-red', delay:.48 },
     ].forEach(({ label, val, sub, cls, delay }) => {
       const c = document.createElement('div');
       c.className = `stat-card ${cls}`;
@@ -832,21 +1211,30 @@ function renderDashboard(allSessions) {
     document.getElementById('session-count').textContent = `${sessions.length} sessions`;
     [...sessions].reverse().forEach(s => {
       const tr = document.createElement('tr');
+      const isReset = resetSessions.has(s.filename);
+      if (isReset) tr.className = 'tr-reset';
       const shipStr  = s.ships.length ? s.ships.join(', ') : '—';
       const crashIcon = s.crashed
         ? `<span class="td-crash" title="${s.crashType}">💥</span>`
         : '<span style="color:var(--text-dim);font-size:10px">✓</span>';
       tr.innerHTML = `
-        <td class="td-date">${fmtDate(s.startDate)}</td>
+        <td style="text-align:center"><button class="mark-reset-btn${isReset ? ' is-reset' : ''}" title="Mark as reset point">↺</button></td>
+        <td class="td-date">${fmtDate(s.startDate)}${isReset ? '<span class="reset-chip">RESET</span>' : ''}</td>
         <td class="td-dur">${fmtDur(s.durMs)}</td>
         <td><span class="td-patch ${patchClass(s.patch)}">${s.patch}</span></td>
         <td class="td-missions">${s.missionsDone > 0 ? s.missionsDone : '—'}</td>
         <td class="td-missions" style="color:var(--gold)">${s.bpNames.length > 0 ? s.bpNames.length : '—'}</td>
+        <td class="td-missions" style="color:var(--purple)" title="${s.rewardsEarned > 0 ? `MG: ${s.rewardsMG} · Council: ${s.rewardsCouncil}` : ''}">${s.rewardsEarned > 0 ? s.rewardsEarned : '—'}</td>
         <td class="td-incap">${s.incaps > 0 ? s.incaps : '—'}</td>
+        <td class="td-combat">${getCombatStr(s)}</td>
         <td>${crashIcon}</td>
         <td class="td-mining">${s.isMining ? '⛏' : ''}</td>
         <td class="td-ships" title="${shipStr}">${shipStr}</td>
       `;
+      tr.querySelector('.mark-reset-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        toggleReset(s.filename);
+      });
       tbody.appendChild(tr);
     });
   }
@@ -870,6 +1258,113 @@ function renderDashboard(allSessions) {
       partyList.innerHTML = '<div class="empty">No party members recorded</div>';
     }
   }
+
+  // ── Mission Blueprint Pools ──
+  let poolFilterIncomplete = true;
+  let poolFilterComplete   = true;
+
+  function renderMissionPools() {
+    const panel    = document.getElementById('pools-panel');
+    const noData   = document.getElementById('pools-no-data');
+    const dataWrap = document.getElementById('pools-data-wrap');
+
+    // Always show the panel once the dashboard is visible
+    panel.style.display = 'block';
+
+    if (!missionPools) {
+      noData.style.display   = 'block';
+      dataWrap.style.display = 'none';
+      document.getElementById('pools-count').textContent = '';
+      return;
+    }
+    noData.style.display   = 'none';
+    dataWrap.style.display = 'block';
+
+    // Build all-time earned blueprint name set
+    const ownedNames = new Set();
+    allSessions.forEach(s => s.bpNames.forEach(n => ownedNames.add(n)));
+
+    const pools     = missionPools.pools || {};
+    const poolNames = Object.keys(pools).sort();
+
+    const searchVal = (document.getElementById('pool-search').value || '').toLowerCase();
+
+    // Filter and sort: incomplete first, then complete; both alpha within group
+    const filtered = poolNames
+      .filter(name => !searchVal || name.toLowerCase().includes(searchVal))
+      .map(name => {
+        const bps       = pools[name].blueprints || [];
+        const haveCount = bps.filter(b => ownedNames.has(b.name)).length;
+        const total     = bps.length;
+        const pct       = total ? Math.round(haveCount / total * 100) : 0;
+        return { name, bps, haveCount, total, pct, complete: haveCount === total };
+      })
+      .filter(p => p.total > 0)
+      .filter(p => (p.complete && poolFilterComplete) || (!p.complete && poolFilterIncomplete))
+      .sort((a, b) => {
+        if (a.complete !== b.complete) return a.complete ? 1 : -1; // incomplete first
+        return a.name.localeCompare(b.name);
+      });
+
+    document.getElementById('pools-count').textContent =
+      `${filtered.length} of ${poolNames.length}`;
+
+    const grid = document.getElementById('pool-grid');
+    grid.innerHTML = '';
+
+    filtered.forEach(({ name, bps, haveCount, total, pct, complete }) => {
+      const have = bps.filter(b => ownedNames.has(b.name));
+      const need = bps.filter(b => !ownedNames.has(b.name));
+
+      const card = document.createElement('div');
+      card.className = 'pool-card' + (complete ? ' complete' : '');
+
+      card.innerHTML = `
+        <div class="pool-card-hd">
+          <span class="pool-name" title="${name}">${name}</span>
+          <span class="pool-prog"><span class="done">${haveCount}</span> / ${total} &nbsp;${pct}%</span>
+        </div>
+        <div class="pool-bar-wrap"><div class="pool-bar" style="width:${pct}%"></div></div>
+        <div class="pool-body">
+          ${have.length ? `
+            <div class="pool-section-hd">✅ Have (${have.length})</div>
+            <div class="pool-bp-list">${have.map(b =>
+              `<span class="pool-bp have" title="${b.category_label}">${b.name}</span>`
+            ).join('')}</div>` : ''}
+          ${need.length ? `
+            <div class="pool-section-hd">❌ Still Need (${need.length})</div>
+            <div class="pool-bp-list">${need.map(b =>
+              `<span class="pool-bp need" title="${b.category_label}">${b.name}</span>`
+            ).join('')}</div>` : ''}
+          ${complete ? '<div class="pool-hint">🎉 Pool complete!</div>' : ''}
+        </div>
+      `;
+
+      // Toggle expand/collapse
+      card.querySelector('.pool-card-hd').addEventListener('click', () => {
+        card.querySelector('.pool-body').classList.toggle('open');
+      });
+
+      grid.appendChild(card);
+    });
+
+    if (!filtered.length) {
+      grid.innerHTML = '<div class="empty" style="grid-column:1/-1">No pools match the current filter.</div>';
+    }
+  }
+
+  // Pool filter button wiring (runs once after DOM ready)
+  document.getElementById('pool-search').addEventListener('input', renderMissionPools);
+  document.getElementById('pool-toggle-incomplete').addEventListener('click', function() {
+    poolFilterIncomplete = !poolFilterIncomplete;
+    this.classList.toggle('active', poolFilterIncomplete);
+    renderMissionPools();
+  });
+  document.getElementById('pool-toggle-complete').addEventListener('click', function() {
+    poolFilterComplete = !poolFilterComplete;
+    this.classList.toggle('active', poolFilterComplete);
+    renderMissionPools();
+  });
 
   // ── Ships ──
   function renderShips(sessions) {
@@ -907,6 +1402,124 @@ function renderDashboard(allSessions) {
     }
   }
 
+  // ── Combat helpers ──
+  function getCombatStr(s) {
+    const k = s.combat.pveKills + s.combat.pvpKills + s.combat.fpsPveKills + s.combat.fpsPvpKills;
+    const d = s.combat.deaths + s.combat.fpsDeaths;
+    if (!k && !d) return '—';
+    const ks = k ? `<span style="color:var(--green)">${k}K</span>` : '';
+    const ds = d ? `<span style="color:var(--red)">${d}D</span>` : '';
+    return [ks,ds].filter(Boolean).join('<span style="color:var(--text-dim)"> / </span>');
+  }
+
+  // ── Combat panel ──
+  // CIG removed CActor::Kill + CVehicle::OnAdvanceDestroyLevel from logs after build 10591185 (patch 4.3.2)
+  const LAST_COMBAT_BUILD = 10591185;
+
+  function renderCombat(sessions) {
+    const ct = { pveKills:0, pvpKills:0, deaths:0, suicides:0, fpsPveKills:0, fpsPvpKills:0, fpsDeaths:0 };
+    const wTot = {}, sTot = {};
+    sessions.forEach(s => {
+      Object.entries(s.combat).forEach(([k,v]) => { ct[k] = (ct[k]||0) + v; });
+      Object.entries(s.weapons).forEach(([k,v]) => { wTot[k] = (wTot[k]||0) + v; });
+      Object.entries(s.shipsDestroyed).forEach(([k,v]) => { sTot[k] = (sTot[k]||0) + v; });
+    });
+
+    const spaceKills = ct.pveKills + ct.pvpKills;
+    const fpsKills   = ct.fpsPveKills + ct.fpsPvpKills;
+    const allKills   = spaceKills + fpsKills;
+    const allDeaths  = ct.deaths + ct.fpsDeaths;
+    const hasCombat  = allKills > 0 || allDeaths > 0 || ct.suicides > 0;
+
+    // Detect whether any loaded sessions are newer-build (no combat logging) vs older (have it)
+    const hasNewBuild = sessions.some(s => { const b = parseInt(s.build); return b > LAST_COMBAT_BUILD; });
+    const hasOldBuild = sessions.some(s => { const b = parseInt(s.build); return b > 0 && b <= LAST_COMBAT_BUILD; });
+
+    const panel    = document.getElementById('combat-panel');
+    const noteEl   = document.getElementById('combat-note');
+    const hdNote   = document.getElementById('combat-hd-note');
+    const listsEl  = document.getElementById('combat-lists');
+
+    // Header-level note for 4.4+ logging removal — always visible when relevant
+    if (hasNewBuild && !hasOldBuild) {
+      hdNote.style.display = 'inline';
+      hdNote.textContent = '— combat logging removed in patch 4.4+';
+    } else if (hasNewBuild && hasOldBuild) {
+      hdNote.style.display = 'inline';
+      hdNote.textContent = '— data from pre-4.4 sessions only';
+    } else {
+      hdNote.style.display = 'none';
+    }
+
+    if (!hasCombat) {
+      if (hasNewBuild) {
+        // Show panel with just the explanation
+        panel.style.display = 'block';
+        document.getElementById('combat-row').innerHTML = '';
+        listsEl.style.display = 'none';
+        noteEl.style.display = 'block';
+        noteEl.innerHTML = 'CIG removed <code>&lt;Actor Death&gt;</code> and <code>&lt;Vehicle Destruction&gt;</code> events from game logs starting in <strong>patch 4.4</strong>. Kills, deaths, and suicides can no longer be detected from log files for these sessions.';
+      } else {
+        panel.style.display = 'none';
+        noteEl.style.display = 'none';
+      }
+      return;
+    }
+
+    panel.style.display = 'block';
+    listsEl.style.display = '';
+    noteEl.style.display = 'none';
+
+    const kd = allDeaths > 0 ? (allKills / allDeaths).toFixed(2)
+             : allKills > 0  ? '∞' : '—';
+
+    // Stat cells
+    const combatRow = document.getElementById('combat-row');
+    combatRow.innerHTML = '';
+    [
+      { l:'Space Kills',  v:spaceKills,  c:'green',  s:`${ct.pveKills} NPC · ${ct.pvpKills} PvP` },
+      { l:'FPS Kills',    v:fpsKills,    c:'green',  s:`${ct.fpsPveKills} NPC · ${ct.fpsPvpKills} PvP` },
+      { l:'Deaths',       v:allDeaths,   c:'red',    s:`${ct.deaths} ship · ${ct.fpsDeaths} FPS` },
+      { l:'K / D Ratio',  v:kd,          c:'cyan',   s:'kills per death' },
+      ...(ct.suicides > 0 ? [{ l:'Suicides', v:ct.suicides, c:'orange', s:'self-inflicted' }] : []),
+    ].forEach(({ l, v, c, s }) => {
+      const cell = document.createElement('div');
+      cell.className = 'cc';
+      cell.innerHTML = `<div class="cc-l">${l}</div><div class="cc-v ${c}">${v}</div><div class="cc-s">${s}</div>`;
+      combatRow.appendChild(cell);
+    });
+
+    // Top weapons (FPS)
+    const wList = document.getElementById('weapons-list');
+    wList.innerHTML = '';
+    const sortedW = Object.entries(wTot).sort((a,b) => b[1]-a[1]).slice(0,10);
+    if (sortedW.length) {
+      sortedW.forEach(([w, c]) => {
+        const li = document.createElement('li');
+        li.className = 'list-item';
+        li.innerHTML = `<span class="li-dot" style="background:var(--orange)"></span><span class="li-name">${w}</span><span class="li-count">${c}</span>`;
+        wList.appendChild(li);
+      });
+    } else {
+      wList.innerHTML = '<div class="empty">No FPS weapon data</div>';
+    }
+
+    // Ships destroyed (space combat)
+    const sList = document.getElementById('ships-destroyed-list');
+    sList.innerHTML = '';
+    const sortedS = Object.entries(sTot).sort((a,b) => b[1]-a[1]).slice(0,10);
+    if (sortedS.length) {
+      sortedS.forEach(([s, c]) => {
+        const li = document.createElement('li');
+        li.className = 'list-item';
+        li.innerHTML = `<span class="li-dot" style="background:var(--red)"></span><span class="li-name">${s}</span><span class="li-count">${c}</span>`;
+        sList.appendChild(li);
+      });
+    } else {
+      sList.innerHTML = '<div class="empty">No ship destruction data</div>';
+    }
+  }
+
   // ── Mining ──
   function renderMining(sessions) {
     const mineralTotal = {}, trophyTotal = {}, refineryTotal = {};
@@ -931,7 +1544,7 @@ function renderDashboard(allSessions) {
       });
       const refRow = document.getElementById('refinery-row');
       refRow.innerHTML = Object.entries(refineryTotal).length
-        ? `<span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);margin-right:8px">REFINERY COMPLETIONS:</span>` +
+        ? `<span style="font-family:'Consolas','Courier New',monospace;font-size:9px;color:var(--text-dim);margin-right:8px">REFINERY COMPLETIONS:</span>` +
           Object.entries(refineryTotal).map(([loc, count]) => `<span class="ref-badge">${loc}: ${count}</span>`).join('')
         : '';
     } else {
@@ -989,7 +1602,7 @@ function renderDashboard(allSessions) {
         const slots = ARMOR_SLOTS.map(s =>
           `<span class="slot-badge ${have.has(s) ? 'slot-have' : 'slot-miss'}">${have.has(s) ? '✓' : '✗'} ${s}</span>`
         ).join('');
-        card.innerHTML = `<div class="set-name">${setName} <span style="font-size:10px;color:var(--text-dim);font-family:'Share Tech Mono',monospace">${pct}%</span></div><div class="set-slots">${slots}</div>`;
+        card.innerHTML = `<div class="set-name">${setName} <span style="font-size:10px;color:var(--text-dim);font-family:'Consolas','Courier New',monospace">${pct}%</span></div><div class="set-slots">${slots}</div>`;
         setGrid.appendChild(card);
       });
     } else {
@@ -997,6 +1610,24 @@ function renderDashboard(allSessions) {
     }
   }
 }
+
+// ── Theme toggle ──
+(function(){
+  const btn = document.getElementById('theme-toggle');
+  btn.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀' : '🌙';
+  btn.addEventListener('click', () => {
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (dark) {
+      document.documentElement.removeAttribute('data-theme');
+      btn.textContent = '🌙';
+      localStorage.setItem('sc-theme','light');
+    } else {
+      document.documentElement.setAttribute('data-theme','dark');
+      btn.textContent = '☀';
+      localStorage.setItem('sc-theme','dark');
+    }
+  });
+})();
 </script>
 </body>
 </html>
