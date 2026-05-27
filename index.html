@@ -601,6 +601,14 @@ function re_all(pattern, text) {
 
 function dedup(arr) { return [...new Set(arr)]; }
 
+// Snap a raw GB value (from binary MiB) to the nearest marketed memory size.
+// Windows/DXGI reports slightly less than the box size due to binary vs decimal
+// conversion and hardware-reserved regions — this gives the number people expect.
+function snapMemGB(rawGB) {
+  const stds = [1,2,3,4,6,8,10,12,16,20,24,32,48,64,96,128,192,256];
+  return stds.reduce((best, s) => Math.abs(s - rawGB) < Math.abs(best - rawGB) ? s : best);
+}
+
 // ── Reset markers (persisted in localStorage) ──
 let resetSessions = new Set(JSON.parse(localStorage.getItem('sc-resets') || '[]'));
 function toggleReset(filename) {
@@ -724,11 +732,11 @@ function parseLog(text, filename) {
   const hw_cores   = (text.match(/Logical CPU Count:\s*(\d+)/)      || [])[1] || '';
   const hw_os      = (text.match(/^(Windows \d[^\r\n]+)/m)          || [])[1]?.trim() || '';
   const hw_ram_mb  = parseInt((text.match(/(\d+)MB physical memory installed/) || [])[1] || '0');
-  const hw_ram     = hw_ram_mb ? `${Math.round(hw_ram_mb / 1024)} GB` : '';
+  const hw_ram     = hw_ram_mb ? `${snapMemGB(hw_ram_mb / 1024)} GB` : '';
   const hw_res     = (text.match(/Current display mode is (\d+x\d+)/) || [])[1] || '';
   const hw_hz      = (text.match(/Change resolution: \d+x\d+ \(Borderless at ([\d.]+)Hz\)/) || [])[1] || '';
   const hw_vram_mb = parseInt((text.match(/GPU: DedicatedVidMemMB = (\d+)/) || [])[1] || '0');
-  const hw_vram    = hw_vram_mb ? `${Math.round(hw_vram_mb / 1024)} GB` : '';
+  const hw_vram    = hw_vram_mb ? `${snapMemGB(hw_vram_mb / 1024)} GB` : '';
   const hw_driver  = (text.match(/VulkanMetric.*?Driver\s+(\S+)/)   || [])[1] || '';
   const hw_sticks  = dedup(re_all(/Connected joystick\d+:\s*([^\r\n]+)/g, text).map(m =>
     m[1].trim().replace(/\s*\{[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}\}/g, '').trim()
