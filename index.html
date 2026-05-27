@@ -519,7 +519,7 @@ const R = {
   bp:        /SHUDEvent_OnNotification.*?Added notification "Received Blueprint:\s*(.*?):\s*"\s*\[/gi,
   done:      /SHUDEvent.*?Added notification "Contract Complete:/gi,
   accepted:  /SHUDEvent.*?Added notification "Contract Accepted:/gi,
-  incap:     /SHUDEvent.*?Added notification "Incapacitated:/gi,
+  incap:     /SHUDEvent.*?Added notification "Incapacitated/gi,
   medbed:    /SHUDEvent.*?Added notification "Medical Bed:/gi,
   party:     /^<[^>]+>\s*([\w\d_]+) has joined the party/gim,
   ship:      /SHUDEvent.*?Added notification "You have joined channel '([^']+)'/gi,
@@ -1585,7 +1585,9 @@ function renderDashboard(_sessions) {
       const parts   = name.split(' ');
       const slotIdx = parts.findIndex(p => ARMOR_SLOTS.includes(p));
       if (slotIdx > 0) {
-        const setName = parts.slice(0, slotIdx).join(' ');
+        const prefix  = parts.slice(0, slotIdx).join(' ');          // e.g. "Testudo"
+        const suffix  = parts.slice(slotIdx + 1).join(' ');         // e.g. "Nightveil"
+        const setName = suffix ? `${prefix} ${suffix}` : prefix;    // e.g. "Testudo Nightveil"
         if (!armorSets[setName]) armorSets[setName] = new Set();
         armorSets[setName].add(parts[slotIdx]);
       }
