@@ -340,7 +340,7 @@ tr.tr-reset td:first-child{border-left:3px solid var(--orange)}
 
 <div id="dashboard">
   <div class="dash-head">
-    <div class="dash-title">PILOT DOSSIER <span class="dash-meta" id="dash-meta"></span></div>
+    <div class="dash-title">PILOT DOSSIER <span id="player-handle-link"></span><span class="dash-meta" id="dash-meta"></span></div>
     <button class="reset-btn" id="reset-btn">↩ Load Different Files</button>
   </div>
 
@@ -475,6 +475,12 @@ tr.tr-reset td:first-child{border-left:3px solid var(--orange)}
         Blueprint ownership is determined from all loaded log files (all-time).
       </div>
     </div>
+    </div>
+
+  <!-- Hardware Specs panel -->
+  <div class="panel" id="hw-panel" style="display:none">
+    <div class="panel-hd">🖥 System Specs <span style="font-size:10px;font-weight:400;color:var(--text-dim);margin-left:8px;letter-spacing:0">(from most recent log)</span></div>
+    <div id="hw-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px 20px;padding:4px 0"></div>
   </div>
 
 </div><!-- /dashboard -->
@@ -537,6 +543,8 @@ const R = {
   kill:      /<Actor Death> CActor::Kill: '([^']+)' \[\d+\] in zone '[^']+' killed by '([^']+)' \[\d+\] using '([^']+)' \[Class [^\]]+\] with damage type '([^']+)'/gi,
   vdestroy:  /<Vehicle Destruction> CVehicle::OnAdvanceDestroyLevel: Vehicle '([^']+)' \[\d+\].*?driven by '([^']+)' \[\d+\] advanced from destroy level (\d+) to (\d+) caused by '([^']+)' \[\d+\] with '([^']+)'/gi,
   fname:     /Game_Build_(\d+)__(\d{2})_(\w+)_(\d{2})__(\d{2})_(\d{2})_(\d{2})_/,
+  // Player handle — "User Login Success - Handle[Name]" line in every SC log
+  handle:    /Handle\[([A-Za-z][A-Za-z0-9_]{2,29})\]/g,
 };
 
 const MONTHS = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
@@ -707,6 +715,36 @@ function parseLog(text, filename) {
   const incaps           = re_all(R.incap, text).length;
   const medbeds          = re_all(R.medbed, text).length;
   const party            = dedup(re_all(R.party, text).map(m => m[1].trim()));
+  const handleMatches    = re_all(R.handle, text).map(m => m[1]);
+  const handle           = handleMatches[0] || '';
+
+  // ── Hardware specs (present near the top of every SC log) ──
+  const hw_cpu     = (text.match(/Host CPU:\s*(.+)/)                || [])[1]?.trim() || '';
+  const hw_cores   = (text.match(/Logical CPU Count:\s*(\d+)/)      || [])[1] || '';
+  const hw_os      = (text.match(/^(Windows \d[^\r\n]+)/m)          || [])[1]?.trim() || '';
+  const hw_ram_mb  = parseInt((text.match(/(\d+)MB physical memory installed/) || [])[1] || '0');
+  const hw_ram     = hw_ram_mb ? `${Math.round(hw_ram_mb / 1024)} GB` : '';
+  const hw_res     = (text.match(/Current display mode is (\d+x\d+)/) || [])[1] || '';
+  const hw_hz      = (text.match(/Change resolution: \d+x\d+ \(Borderless at ([\d.]+)Hz\)/) || [])[1] || '';
+  const hw_vram_mb = parseInt((text.match(/GPU: DedicatedVidMemMB = (\d+)/) || [])[1] || '0');
+  const hw_vram    = hw_vram_mb ? `${Math.round(hw_vram_mb / 1024)} GB` : '';
+  const hw_driver  = (text.match(/VulkanMetric.*?Driver\s+(\S+)/)   || [])[1] || '';
+  const hw_sticks  = dedup(re_all(/Connected joystick\d+:\s*([^\r\n]+)/g, text).map(m => m[1].trim()));
+  // GPU: walk adapter entries and keep the one just before "Suitable rendering device: yes"
+  let hw_gpu = '';
+  {
+    const adapterRe   = /(?:^|\n)\s*-\s+([^\r\n]+)/g;
+    const suitableIdx = text.indexOf('Suitable rendering device: yes');
+    if (suitableIdx >= 0) {
+      let m;
+      while ((m = adapterRe.exec(text)) !== null) {
+        if (m.index > suitableIdx) break;
+        hw_gpu = m[1].trim();
+      }
+    }
+  }
+  const hw = hw_cpu ? { cpu: hw_cpu, cores: hw_cores, os: hw_os, ram: hw_ram, res: hw_res, hz: hw_hz, gpu: hw_gpu, vram: hw_vram, driver: hw_driver, sticks: hw_sticks } : null;
+
   let ships = dedup(
     re_all(R.ship, text)
       .map(m => m[1])
@@ -835,9 +873,10 @@ function parseLog(text, filename) {
     version, build, branch, patch,
     crashed, crashType,
     bpNames, missionsDone, missionsAccepted, incaps, medbeds,
-    party, ships, minerals, trophies, isMining, refinery,
+    handle, party, ships, minerals, trophies, isMining, refinery,
     missionTypes, fatals, combat, weapons, shipsDestroyed,
     rewardsEarned, rewardsMG, rewardsCouncil, unknownMissions,
+    hw,
   };
 }
 
@@ -933,6 +972,15 @@ function renderDashboard(_sessions) {
   allSessions = _sessions;  // update module-level so autoLoad/processFiles can read it
   dropZone.style.display  = 'none';
   dashboard.style.display = 'block';
+
+  // ── Player handle — use the most recent session's handle (handles can change) ──
+  const playerHandle = [...allSessions].reverse().find(s => s.handle)?.handle || '';
+  const linkEl = document.getElementById('player-handle-link');
+  if (playerHandle) {
+    linkEl.innerHTML = `— <a href="https://robertsspaceindustries.com/citizens/${playerHandle}" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:none;font-size:14px;font-weight:600" title="View RSI Citizen Dossier">${playerHandle} ↗</a> `;
+  } else {
+    linkEl.innerHTML = '';
+  }
 
   // ── Patch list ──
   const patches = [...new Set(allSessions.map(s => s.patch))];
@@ -1070,6 +1118,7 @@ function renderDashboard(_sessions) {
     renderMining(sessions);
     renderParty(allSessions);   // always all-time, like blueprints
     renderMissionPools();
+    renderHardware();
   }
   rerenderFn = rerender;  // expose at module level so autoLoad/processFiles can trigger a re-render
 
@@ -1553,6 +1602,40 @@ function renderDashboard(_sessions) {
     } else {
       miningPanel.style.display = 'none';
     }
+  }
+
+  // ── Hardware Specs (from most recent session that has hw data) ──
+  function renderHardware() {
+    const panel = document.getElementById('hw-panel');
+    const grid  = document.getElementById('hw-grid');
+    const hw    = [...allSessions].reverse().find(s => s.hw)?.hw;
+    if (!hw) { panel.style.display = 'none'; return; }
+    panel.style.display = 'block';
+
+    function hwRow(icon, label, value) {
+      if (!value) return '';
+      return `<div style="display:flex;flex-direction:column;gap:2px">
+        <div style="font-size:10px;font-weight:600;letter-spacing:.06em;color:var(--text-dim);text-transform:uppercase">${icon} ${label}</div>
+        <div style="font-size:13px;font-weight:500;color:var(--text-bright)">${value}</div>
+      </div>`;
+    }
+
+    const gpuLabel = hw.gpu + (hw.vram ? ` — ${hw.vram} VRAM` : '');
+    const cpuLabel = hw.cpu + (hw.cores ? ` (${hw.cores} logical cores)` : '');
+    const resLabel = hw.res + (hw.hz ? ` @ ${parseFloat(hw.hz)} Hz` : '');
+    const driverLabel = hw.driver ? `Driver ${hw.driver}` : '';
+
+    let html = '';
+    html += hwRow('🎮', 'GPU',        gpuLabel);
+    html += hwRow('⚙️', 'CPU',        cpuLabel);
+    html += hwRow('💾', 'RAM',        hw.ram);
+    html += hwRow('🖥', 'Display',    resLabel);
+    html += hwRow('🪟', 'OS',         hw.os);
+    html += hwRow('📋', 'GPU Driver', driverLabel);
+    if (hw.sticks && hw.sticks.length) {
+      html += hwRow('🕹', 'Controllers', hw.sticks.join(', '));
+    }
+    grid.innerHTML = html;
   }
 
   // ── Blueprints (static, all-time) ──
