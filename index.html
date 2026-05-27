@@ -733,16 +733,30 @@ function parseLog(text, filename) {
   const hw_sticks  = dedup(re_all(/Connected joystick\d+:\s*([^\r\n]+)/g, text).map(m =>
     m[1].trim().replace(/\s*\{[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}\}/g, '').trim()
   ));
-  // GPU: walk adapter entries and keep the one just before "Suitable rendering device: yes"
+  // GPU: find adapter name just before "Suitable rendering device: yes"
+  // SC logs use several formats across versions — try each in order
   let hw_gpu = '';
   {
-    const adapterRe   = /(?:^|\n)\s*-\s+([^\r\n]+)/g;
-    const suitableIdx = text.indexOf('Suitable rendering device: yes');
+    const suitableIdx = text.search(/Suitable rendering device:\s*yes/i);
     if (suitableIdx >= 0) {
-      let m;
-      while ((m = adapterRe.exec(text)) !== null) {
-        if (m.index > suitableIdx) break;
-        hw_gpu = m[1].trim();
+      const pre = text.slice(0, suitableIdx);
+      // Format A: "Adapter[N]: GPU_NAME" (SC 4.x+)
+      const fmtA = [...pre.matchAll(/Adapter\s*\[\d+\]\s*:\s*([^\r\n(,<>]+)/g)];
+      if (fmtA.length) hw_gpu = fmtA[fmtA.length - 1][1].trim();
+      // Format B: "Display Adapter N: GPU_NAME"
+      if (!hw_gpu) {
+        const fmtB = [...pre.matchAll(/Display Adapter\s+\d+\s*:\s*([^\r\n(,<>]+)/g)];
+        if (fmtB.length) hw_gpu = fmtB[fmtB.length - 1][1].trim();
+      }
+      // Format C: "GPU Name: GPU_NAME"
+      if (!hw_gpu) {
+        const fmtC = pre.match(/GPU\s+Name\s*:\s*([^\r\n]+)/i);
+        if (fmtC) hw_gpu = fmtC[1].trim();
+      }
+      // Format D: any line containing "- NVIDIA/AMD/Intel GPU_NAME" (handles log prefixes)
+      if (!hw_gpu) {
+        const fmtD = [...pre.matchAll(/[^\r\n]*-\s+((?:NVIDIA|AMD|Intel(?:\s*\(R\))?)\s+[^\r\n<>:(]{2,60})/g)];
+        if (fmtD.length) hw_gpu = fmtD[fmtD.length - 1][1].trim();
       }
     }
   }
