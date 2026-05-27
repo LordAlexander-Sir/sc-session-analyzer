@@ -350,6 +350,12 @@ tr.tr-reset td:first-child{border-left:3px solid var(--orange)}
   <!-- Stat cards -->
   <div class="stat-row" id="stat-row"></div>
 
+  <!-- Hardware Specs panel (between stats and chart) -->
+  <div class="panel" id="hw-panel" style="display:none">
+    <div class="panel-hd">🖥 System Specs <span style="font-size:10px;font-weight:400;color:var(--text-dim);margin-left:8px;letter-spacing:0">(from most recent log)</span></div>
+    <div id="hw-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px 20px;padding:4px 0"></div>
+  </div>
+
   <!-- Bar chart -->
   <div class="panel" id="chart-panel">
     <div class="panel-hd">
@@ -477,11 +483,6 @@ tr.tr-reset td:first-child{border-left:3px solid var(--orange)}
     </div>
     </div>
 
-  <!-- Hardware Specs panel -->
-  <div class="panel" id="hw-panel" style="display:none">
-    <div class="panel-hd">🖥 System Specs <span style="font-size:10px;font-weight:400;color:var(--text-dim);margin-left:8px;letter-spacing:0">(from most recent log)</span></div>
-    <div id="hw-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px 20px;padding:4px 0"></div>
-  </div>
 
 </div><!-- /dashboard -->
 </div><!-- /wrap -->
@@ -729,7 +730,9 @@ function parseLog(text, filename) {
   const hw_vram_mb = parseInt((text.match(/GPU: DedicatedVidMemMB = (\d+)/) || [])[1] || '0');
   const hw_vram    = hw_vram_mb ? `${Math.round(hw_vram_mb / 1024)} GB` : '';
   const hw_driver  = (text.match(/VulkanMetric.*?Driver\s+(\S+)/)   || [])[1] || '';
-  const hw_sticks  = dedup(re_all(/Connected joystick\d+:\s*([^\r\n]+)/g, text).map(m => m[1].trim()));
+  const hw_sticks  = dedup(re_all(/Connected joystick\d+:\s*([^\r\n]+)/g, text).map(m =>
+    m[1].trim().replace(/\s*\{[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}\}/g, '').trim()
+  ));
   // GPU: walk adapter entries and keep the one just before "Suitable rendering device: yes"
   let hw_gpu = '';
   {
