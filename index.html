@@ -566,6 +566,13 @@ function renderHangarPanel(handle, hangar) {
   ).join('');
 
   panel.style.display = 'block';
+
+  // Show the main dashboard container and hide the drop zone
+  const dash = document.getElementById('dashboard');
+  const drop = document.getElementById('drop-zone');
+  if (dash) dash.style.display = 'block';
+  if (drop) drop.style.display = 'none';
+
   console.log(`[analyzer] Hangar panel: ${ships.length} ships, ${paints.length} paints, ${bps.length} blueprints, ${pledges.length} pledges`);
 }
 
