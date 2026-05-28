@@ -1094,6 +1094,21 @@ function processFiles(files) {
           return;
         }
 
+        // ── SC Hangar Exporter (Chrome extension direct export) ──
+        if (data.type === 'sc-hangar-export' && data.hangar) {
+          console.log(`[analyzer] Loading hangar export from ${data.handle || 'unknown'}`);
+          // Normalise to the same shape renderHangarPanel expects
+          const hangar = {
+            ships:      data.hangar.ships    || [],
+            paints:     data.hangar.paints   || [],
+            blueprints: data.blueprints      || [],   // top-level in extension format
+            pledges:    [],                           // not in extension format
+          };
+          renderHangarPanel(data.handle || 'Pilot', hangar);
+          loadedFromExport = true;
+          return;
+        }
+
         // ── mission_pools.json ──
         if (data.pools && data.total_pools !== undefined) {
           missionPools = data;
