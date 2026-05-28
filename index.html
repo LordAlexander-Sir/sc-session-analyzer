@@ -431,6 +431,30 @@ tr.tr-reset td:first-child{border-left:3px solid var(--orange)}
     <div id="set-grid" class="mineral-grid"></div>
   </div>
 
+  <!-- Hangar panel (v2 bot export only) -->
+  <div id="hangar-panel" style="display:none">
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-hd">🚀 Ships Owned <span class="count" id="hangar-ships-count"></span></div>
+        <div class="scrollable"><ul id="hangar-ships-list" style="list-style:none"></ul></div>
+      </div>
+      <div class="panel">
+        <div class="panel-hd">🎨 Paints <span class="count" id="hangar-paints-count"></span></div>
+        <div class="scrollable"><ul id="hangar-paints-list" style="list-style:none"></ul></div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-hd">📋 Unreleased Pledges <span class="count" id="hangar-pledges-count"></span></div>
+        <div class="scrollable"><ul id="hangar-pledges-list" style="list-style:none"></ul></div>
+      </div>
+      <div class="panel">
+        <div class="panel-hd">🔵 Blueprints <span class="count" id="hangar-bp-count"></span></div>
+        <div class="scrollable"><ul id="hangar-bp-list" style="list-style:none"></ul></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Ships + Mission Types -->
   <div class="two-col">
     <div class="panel">
@@ -497,6 +521,54 @@ tr.tr-reset td:first-child{border-left:3px solid var(--orange)}
 <div id="tooltip"></div>
 
 <script>
+// ── Hangar Panel (v2 bot export) ──────────────────────────────────────────────
+function renderHangarPanel(handle, hangar) {
+  const panel = document.getElementById('hangar-panel');
+  if (!panel) return;
+
+  const ships   = hangar.ships    || [];
+  const paints  = hangar.paints   || [];
+  const bps     = hangar.blueprints || [];
+  const pledges = hangar.pledges  || [];
+
+  // Ships owned
+  const shipsList = document.getElementById('hangar-ships-list');
+  document.getElementById('hangar-ships-count').textContent = ships.length;
+  shipsList.innerHTML = ships.map(s => {
+    const qty  = s.quantity > 1 ? ` <span style="color:var(--cyan);font-size:10px">×${s.quantity}</span>` : '';
+    const lti  = s.lti ? ' <span style="color:var(--green);font-size:9px;background:var(--green-dim);padding:1px 5px;border-radius:8px">LTI</span>' : '';
+    const mfg  = s.manufacturer ? `<span style="color:var(--text-dim);font-size:10px;display:block">${s.manufacturer}</span>` : '';
+    return `<li style="padding:4px 0;border-bottom:1px solid var(--border)">🛸 ${s.name}${qty}${lti}${mfg}</li>`;
+  }).join('');
+
+  // Paints
+  const paintsList = document.getElementById('hangar-paints-list');
+  document.getElementById('hangar-paints-count').textContent = paints.length;
+  paintsList.innerHTML = paints.map(p =>
+    `<li style="padding:3px 0;border-bottom:1px solid var(--border);font-size:12px">🎨 ${p.name}</li>`
+  ).join('');
+
+  // Unreleased pledges
+  const pledgesList = document.getElementById('hangar-pledges-list');
+  document.getElementById('hangar-pledges-count').textContent = pledges.length;
+  pledgesList.innerHTML = pledges.length
+    ? pledges.map(p => {
+        const loaner = p.loaner_ship ? ` <span style="color:var(--text-dim);font-size:10px">→ ${p.loaner_ship}</span>` : '';
+        return `<li style="padding:3px 0;border-bottom:1px solid var(--border);font-size:12px">📋 ${p.name}${loaner}</li>`;
+      }).join('')
+    : '<li style="color:var(--text-dim);font-size:11px;padding:6px 0">No unreleased pledges</li>';
+
+  // Blueprints
+  const bpList = document.getElementById('hangar-bp-list');
+  document.getElementById('hangar-bp-count').textContent = bps.length;
+  bpList.innerHTML = bps.map(b =>
+    `<li style="padding:2px 0;font-size:11px;color:var(--text-dim)">• ${b}</li>`
+  ).join('');
+
+  panel.style.display = 'block';
+  console.log(`[analyzer] Hangar panel: ${ships.length} ships, ${paints.length} paints, ${bps.length} blueprints, ${pledges.length} pledges`);
+}
+
 // ── Session export / share ──
 // Serialises all parsed session data + mission pools into a portable JSON that
 // anyone can drag-drop onto the drop zone to see the exact same dashboard.
@@ -992,9 +1064,15 @@ function processFiles(files) {
       try {
         const data = JSON.parse(text);
 
-        // ── Shared session export ──
+        // ── Shared session export (v1) or hangar export (v2) ──
         if (data.type === 'sc-session-export' && Array.isArray(data.sessions)) {
-          console.log(`[analyzer] Loading shared export from ${data.handle || 'unknown'} (${data.sessions.length} sessions)`);
+          console.log(`[analyzer] Loading shared export from ${data.handle || 'unknown'} (${data.sessions.length} sessions, v${data.version || 1})`);
+
+          // v2: render hangar panel if hangar data is present
+          if (data.version >= 2 && data.hangar) {
+            renderHangarPanel(data.handle || 'Pilot', data.hangar);
+          }
+
           // Restore sessions — revive Date objects and Sets that were serialised to primitives
           const sessions = data.sessions.map(s => ({
             ...s,
@@ -1011,7 +1089,7 @@ function processFiles(files) {
             localStorage.setItem('sc-resets', JSON.stringify(data.resetSessions));
           }
 
-          renderDashboard(sessions);
+          if (sessions.length) renderDashboard(sessions);
           loadedFromExport = true;
           return;
         }
