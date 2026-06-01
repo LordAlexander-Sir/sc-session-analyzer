@@ -38,9 +38,24 @@
 <script>
   // The token is in the URL hash — the extension reads it via tabs.onUpdated.
   // This page just shows a success message and closes itself.
-  // Clear the token from the URL immediately so it doesn't persist in history
+  // Read token and extension ID from URL hash BEFORE clearing it
+  const hashParams  = new URLSearchParams(window.location.hash.slice(1));
+  const token       = hashParams.get('access_token');
+  const expiresIn   = parseInt(hashParams.get('expires_in') || '604800', 10);
+  const extensionId = hashParams.get('state');   // set by popup.js via OAuth state param
+
+  // Clear hash immediately so the token never appears in browser history
   if (window.history && window.history.replaceState) {
     window.history.replaceState(null, '', window.location.pathname);
+  }
+
+  // Send token to the extension's background service worker
+  if (token && extensionId && typeof chrome !== 'undefined' && chrome.runtime) {
+    chrome.runtime.sendMessage(
+      extensionId,
+      { type: 'discord-oauth', token, expiresIn },
+      (response) => { /* background.js saves it to storage */ }
+    );
   }
 
   let n = 3;
