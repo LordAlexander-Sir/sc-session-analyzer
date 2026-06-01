@@ -1042,6 +1042,21 @@ async function autoLoadMissionPools() {
 }
 autoLoadMissionPools();
 
+// ── SC Hangar Exporter extension bridge ───────────────────────────────────────
+// Called by the Chrome extension after it injects a content script.
+// Accepts a raw JSON string, wraps it in a File, and runs it through the
+// normal processFiles pipeline so the full dashboard renders automatically.
+window.scExtensionLoad = function(jsonString) {
+  try {
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const file = new File([blob], 'sc-hangar-export.json', { type: 'application/json' });
+    console.log('[analyzer] Loading data from SC Hangar Exporter extension…');
+    processFiles([file]);
+  } catch (e) {
+    console.error('[analyzer] scExtensionLoad failed:', e);
+  }
+};
+
 function processFiles(files) {
   const logs  = files.filter(f => f.name.toLowerCase().endsWith('.log'));
   const jsons = files.filter(f => f.name.toLowerCase().endsWith('.json'));
