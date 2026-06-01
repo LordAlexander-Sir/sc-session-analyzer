@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SC Hangar Exporter — Privacy Policy</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #1e293b; line-height: 1.7; }
+    h1 { color: #0f172a; } h2 { color: #1e293b; margin-top: 2em; }
+    .note { background: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+    a { color: #2563eb; }
+  </style>
+</head>
+<body>
+  <h1>SC Hangar Exporter — Privacy Policy</h1>
+  <p><em>Last updated: June 2026</em></p>
+
+  <div class="note">
+    <strong>Short version:</strong> All your data stays on your device. We do not operate any servers, collect analytics, or transmit your data to anyone except Discord (when you use "Send to Bot") and the RSI website (to fetch your hangar).
+  </div>
+
+  <h2>What data the extension accesses</h2>
+  <ul>
+    <li><strong>RSI hangar data</strong> — ship names, paint names, and pledge information fetched from robertsspaceindustries.com using your existing browser login session. This data never leaves your device except when you explicitly click "Send to Bot."</li>
+    <li><strong>Star Citizen game logs</strong> — session history, blueprint records, and hardware specs read from .log files you select. Processed entirely in your browser. Never uploaded automatically.</li>
+    <li><strong>Discord account identity</strong> — your Discord username, avatar URL, and user ID, obtained via Discord OAuth2 when you click "Connect Discord Account." Stored only in your browser's local extension storage.</li>
+    <li><strong>Discord webhook URL</strong> — a URL you paste from your Discord server. Stored only in your browser's local extension storage.</li>
+  </ul>
+
+  <h2>Where data is stored</h2>
+  <p>All data is stored exclusively in <code>chrome.storage.local</code> on your own device. This storage is private to the extension and is not accessible to websites or other extensions.</p>
+
+  <h2>When data is transmitted</h2>
+  <ul>
+    <li><strong>To robertsspaceindustries.com</strong> — only when you click "Fetch Hangar Data." The extension reads your hangar pages using your existing browser login session (same as visiting the page yourself).</li>
+    <li><strong>To discord.com</strong> — only for two purposes:
+      <ol>
+        <li>OAuth2 authorization: to verify your Discord identity when you click "Connect Discord Account."</li>
+        <li>Webhook POST: when you click "Send to Bot," your hangar JSON is posted to the Discord webhook URL you configured. This goes directly to Discord's servers and appears in the channel associated with that webhook.</li>
+      </ol>
+    </li>
+    <li><strong>To lordalexander-sir.github.io</strong> — the OAuth2 callback page (for the authorization flow) and the SC Session Analyzer (when you click "Open in Analyzer"). These are static pages that run entirely in your browser.</li>
+  </ul>
+
+  <h2>What we do NOT do</h2>
+  <ul>
+    <li>We do not operate any backend servers or databases.</li>
+    <li>We do not collect analytics or usage statistics.</li>
+    <li>We do not sell or share your data with any third party.</li>
+    <li>We do not read your RSI login credentials or passwords — we use your existing browser session cookies, same as a normal page visit.</li>
+    <li>We do not access any Star Citizen game data beyond what you explicitly select.</li>
+  </ul>
+
+  <h2>Data you can delete</h2>
+  <p>To remove all stored data: click "Disconnect" in the extension to clear your Discord connection, or go to <code>chrome://extensions</code> → SC Hangar Exporter → "Clear Data." Uninstalling the extension removes all stored data automatically.</p>
+
+  <h2>Third-party services</h2>
+  <ul>
+    <li><a href="https://discord.com/privacy" target="_blank">Discord Privacy Policy</a> — governs data sent to Discord via OAuth2 and webhooks.</li>
+    <li><a href="https://robertsspaceindustries.com/privacy" target="_blank">Roberts Space Industries Privacy Policy</a> — governs data on the RSI website.</li>
+  </ul>
+
+  <h2>Changes to this policy</h2>
+  <p>Any updates will be reflected at this URL. The extension version number will be incremented when policy changes occur.</p>
+
+  <h2>Contact</h2>
+  <p>Questions about this privacy policy can be directed to the extension developer via the Discord server where this bot operates.</p>
+</body>
+</html>
