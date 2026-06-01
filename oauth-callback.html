@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SC Hangar Exporter — Discord Connected</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #0B1220;
+      color: #E2E8F0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: #1E293B;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 40px 48px;
+      text-align: center;
+      max-width: 420px;
+    }
+    .icon { font-size: 48px; margin-bottom: 16px; }
+    h1 { font-size: 22px; margin: 0 0 8px; color: #F1F5F9; }
+    p  { color: #94A3B8; margin: 0; font-size: 14px; }
+    .countdown { margin-top: 16px; font-size: 12px; color: #475569; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="icon">✅</div>
+  <h1>Discord Connected!</h1>
+  <p>The SC Hangar Exporter extension is now linked to your Discord account.</p>
+  <p class="countdown" id="msg">This tab will close automatically in 3 seconds…</p>
+</div>
+<script>
+  // The token is in the URL hash — the extension reads it via tabs.onUpdated.
+  // This page just shows a success message and closes itself.
+  let n = 3;
+  const el = document.getElementById('msg');
+  const iv = setInterval(() => {
+    n--;
+    if (n <= 0) { clearInterval(iv); window.close(); }
+    else el.textContent = `This tab will close automatically in ${n} second${n !== 1 ? 's' : ''}…`;
+  }, 1000);
+</script>
+</body>
+</html>
