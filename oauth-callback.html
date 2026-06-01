@@ -38,6 +38,11 @@
 <script>
   // The token is in the URL hash — the extension reads it via tabs.onUpdated.
   // This page just shows a success message and closes itself.
+  // Clear the token from the URL immediately so it doesn't persist in history
+  if (window.history && window.history.replaceState) {
+    window.history.replaceState(null, '', window.location.pathname);
+  }
+
   let n = 3;
   const el = document.getElementById('msg');
   const iv = setInterval(() => {
