@@ -36,26 +36,13 @@
   <p class="countdown" id="msg">This tab will close automatically in 3 seconds…</p>
 </div>
 <script>
-  // The token is in the URL hash — the extension reads it via tabs.onUpdated.
-  // This page just shows a success message and closes itself.
-  // Read token and extension ID from URL hash BEFORE clearing it
-  const hashParams  = new URLSearchParams(window.location.hash.slice(1));
-  const token       = hashParams.get('access_token');
-  const expiresIn   = parseInt(hashParams.get('expires_in') || '604800', 10);
-  const extensionId = hashParams.get('state');   // set by popup.js via OAuth state param
-
-  // Clear hash immediately so the token never appears in browser history
+  // The extension captures the token via two paths:
+  //   1. background.js tabs.onUpdated — fires when this page loads with the token in the URL hash
+  //   2. oauth_callback.js content script — injected at document_start, reads the hash first
+  // This page only clears the hash (so the token never sits in browser history)
+  // and shows a success message while the extension closes the tab.
   if (window.history && window.history.replaceState) {
     window.history.replaceState(null, '', window.location.pathname);
-  }
-
-  // Send token to the extension's background service worker
-  if (token && extensionId && typeof chrome !== 'undefined' && chrome.runtime) {
-    chrome.runtime.sendMessage(
-      extensionId,
-      { type: 'discord-oauth', token, expiresIn },
-      (response) => { /* background.js saves it to storage */ }
-    );
   }
 
   let n = 3;

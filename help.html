@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SC Hangar Exporter — Help & Troubleshooting</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      background: #0b1220;
+      color: #94a3b8;
+      line-height: 1.6;
+    }
+
+    a { color: #60a5fa; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Header ── */
+    .site-header {
+      background: #1e293b;
+      border-bottom: 1px solid #2d3f56;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .site-header h1 { font-size: 16px; font-weight: 700; color: #f1f5f9; }
+    .site-header .back { font-size: 12px; color: #475569; margin-left: auto; }
+    .site-header .back a { color: #60a5fa; }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+    }
+
+    /* ── Nav ── */
+    .nav {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 36px;
+    }
+    .nav a {
+      padding: 6px 14px;
+      border: 1px solid #2d3f56;
+      border-radius: 20px;
+      font-size: 12px;
+      color: #64748b;
+      transition: all .15s;
+    }
+    .nav a:hover { border-color: #60a5fa; color: #60a5fa; text-decoration: none; }
+
+    /* ── Sections ── */
+    .section { margin-bottom: 56px; }
+
+    h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #1a2640;
+    }
+
+    h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin: 28px 0 10px;
+    }
+
+    p { margin-bottom: 12px; }
+
+    /* ── Steps ── */
+    .steps { list-style: none; counter-reset: step; }
+    .steps li {
+      counter-increment: step;
+      display: flex;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .steps li::before {
+      content: counter(step);
+      min-width: 26px;
+      height: 26px;
+      background: rgba(37,99,235,.2);
+      border: 1px solid #2563eb;
+      border-radius: 50%;
+      color: #60a5fa;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .steps li strong { color: #f1f5f9; }
+
+    /* ── Code path ── */
+    .path {
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 12px;
+      background: #0a1120;
+      border: 1px solid #2d3f56;
+      border-radius: 5px;
+      padding: 8px 12px;
+      color: #7dd3fc;
+      word-break: break-all;
+      margin: 8px 0 12px;
+    }
+
+    /* ── Tip box ── */
+    .tip {
+      padding: 10px 14px;
+      background: rgba(251,146,60,.07);
+      border-left: 3px solid #fb923c;
+      border-radius: 0 6px 6px 0;
+      font-size: 13px;
+      color: #94a3b8;
+      margin: 12px 0;
+    }
+    .tip strong { color: #f1f5f9; }
+
+    /* ── Error cards ── */
+    .error-card {
+      background: #111827;
+      border: 1px solid #1e2d42;
+      border-radius: 10px;
+      padding: 20px 22px;
+      margin-bottom: 20px;
+      scroll-margin-top: 80px;
+    }
+    .error-card:target {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px #2563eb33;
+    }
+
+    .error-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .error-code {
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      background: rgba(37,99,235,.15);
+      border: 1px solid #2563eb;
+      border-radius: 5px;
+      padding: 3px 8px;
+      color: #60a5fa;
+      white-space: nowrap;
+    }
+    .error-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+    .error-cause {
+      font-size: 12px;
+      color: #475569;
+      margin-bottom: 10px;
+    }
+    .fix-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: #4ade80;
+      margin-bottom: 8px;
+    }
+
+    .browser-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .browser-tab {
+      padding: 4px 12px;
+      border: 1px solid #2d3f56;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      color: #64748b;
+      background: none;
+    }
+    .browser-tab.active {
+      border-color: #2563eb;
+      color: #60a5fa;
+      background: rgba(37,99,235,.1);
+    }
+    .browser-fix { display: none; }
+    .browser-fix.active { display: block; }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <span>🚀</span>
+  <h1>SC Hangar Exporter — Help & Troubleshooting</h1>
+  <span class="back"><a href="/">← Analyzer</a></span>
+</header>
+
+<div class="container">
+
+  <nav class="nav">
+    <a href="#setup">Setup Guide</a>
+    <a href="#errors">Error Codes</a>
+    <a href="#browser">Browser Blocking</a>
+    <a href="#bot">Bot Setup</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- Setup Guide                                                    -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section class="section" id="setup">
+    <h2>Setup Guide</h2>
+
+    <h3>① Install the Extension</h3>
+    <ol class="steps">
+      <li>Download the <strong>SCHangarExporter</strong> folder from your server admin or the project repo.</li>
+      <li>Open Chrome and navigate to <code style="color:#7dd3fc">chrome://extensions</code></li>
+      <li>Enable <strong>Developer mode</strong> (toggle, top right).</li>
+      <li>Click <strong>Load unpacked</strong> and select the <code style="color:#7dd3fc">SCHangarExporter</code> folder.</li>
+      <li>The 🚀 rocket icon appears in your Chrome toolbar. Pin it for easy access.</li>
+    </ol>
+
+    <h3>② Log into RSI</h3>
+    <p>Sign into <a href="https://robertsspaceindustries.com" target="_blank" rel="noopener">robertsspaceindustries.com</a> in any Chrome tab. The extension finds your session automatically — you don't need to be on that tab when you click Fetch.</p>
+
+    <h3>③ Connect Discord</h3>
+    <ol class="steps">
+      <li>Open the extension popup and click <strong>🔗 Connect Discord Account</strong>.</li>
+      <li>A Discord authorization tab opens. Click <strong>Authorize</strong>.</li>
+      <li>The tab closes automatically and you'll see your Discord username in the popup.</li>
+    </ol>
+    <div class="tip">💡 The extension only requests <strong>identify</strong> scope — it reads your Discord username and ID, nothing else. No messages, no server management.</div>
+
+    <h3>④ Set your Bot Webhook URL</h3>
+    <p>Your server admin creates a webhook for the import channel. Open <strong>🤖 Bot Webhook URL</strong> in the extension and paste it in. You only do this once.</p>
+    <p><strong>Admins:</strong> Discord → your channel → Edit Channel → Integrations → Webhooks → New Webhook → Copy URL.</p>
+
+    <h3>⑤ Set your Import Key</h3>
+    <ol class="steps">
+      <li>In Discord, open the <strong>Fleet Dashboard</strong> and click <strong>Personal Profile</strong>.</li>
+      <li>Click <strong>📤 Import</strong> to see your personal import key.</li>
+      <li>Copy the key and paste it into the extension's <strong>🔑 Bot Import Key</strong> settings.</li>
+    </ol>
+    <div class="tip">💡 Keep this key private. If you think it was compromised, click <strong>🔄 Generate New Key</strong> in Discord and paste the new one into the extension.</div>
+
+    <h3>⑥ Set your Log Folder <span style="font-size:12px;color:#475569;font-weight:400">(optional)</span></h3>
+    <p>Click <strong>📂 Set Log Folder</strong> and navigate to:</p>
+    <div class="path">C:\Program Files\Roberts Space Industries\StarCitizen\LIVE\logbackups\</div>
+    <p>If Star Citizen is on a different drive, open the RSI Launcher → gear ⚙️ next to LIVE → <em>Show game folder</em>, then open the <code style="color:#7dd3fc">logbackups\</code> subfolder.</p>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- Error Codes                                                    -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section class="section" id="errors">
+    <h2>Error Code Reference</h2>
+    <p>When the extension encounters an error it displays a clickable code like <span style="font-family:monospace;color:#60a5fa;font-size:12px">[EXT-001]</span>. Click it or find the code below for the fix.</p>
+
+    <!-- EXT-001 -->
+    <div class="error-card" id="EXT-001">
+      <div class="error-header">
+        <span class="error-code">EXT-001</span>
+        <span class="error-title">Not logged into RSI</span>
+      </div>
+      <div class="error-cause">The extension fetched your hangar but RSI returned a login page instead of your ships.</div>
+      <div class="fix-label">How to fix</div>
+      <ol class="steps">
+        <li>Open <a href="https://robertsspaceindustries.com" target="_blank" rel="noopener">robertsspaceindustries.com</a> in any Chrome tab.</li>
+        <li>Sign in with your RSI account.</li>
+        <li>Return to the extension and click <strong>🔄 Fetch Hangar Data</strong> again.</li>
+      </ol>
+    </div>
+
+    <!-- EXT-002 -->
+    <div class="error-card" id="EXT-002">
+      <div class="error-header">
+        <span class="error-code">EXT-002</span>
+        <span class="error-title">Could not reach RSI content script</span>
+      </div>
+      <div class="error-cause">The extension opened an RSI tab but the page didn't load in time for the content script to start, or the tab was already on a page the extension can't reach.</div>
+      <div class="fix-label">How to fix</div>
+      <ol class="steps">
+        <li>If you have an RSI tab open, refresh it and wait for it to fully load.</li>
+        <li>Click <strong>🔄 Fetch Hangar Data</strong> again — the extension will try a fresh background tab.</li>
+        <li>If this repeats, check that you're logged into RSI (<a href="#EXT-001">EXT-001</a>).</li>
+      </ol>
+    </div>
+
+    <!-- EXT-003 -->
+    <div class="error-card" id="EXT-003">
+      <div class="error-header">
+        <span class="error-code">EXT-003</span>
+        <span class="error-title">RSI page timed out</span>
+      </div>
+      <div class="error-cause">The RSI account page took longer than 30 seconds to load. Usually a slow connection or RSI server issue.</div>
+      <div class="fix-label">How to fix</div>
+      <ol class="steps">
+        <li>Check your internet connection.</li>
+        <li>Try opening <a href="https://robertsspaceindustries.com/account" target="_blank" rel="noopener">robertsspaceindustries.com/account</a> manually — if it loads slowly, RSI may be having issues.</li>
+        <li>Wait a minute and try again.</li>
+      </ol>
+    </div>
+
+    <!-- EXT-005 -->
+    <div class="error-card" id="EXT-005">
+      <div class="error-header">
+        <span class="error-code">EXT-005</span>
+        <span class="error-title">No .log files found</span>
+      </div>
+      <div class="error-cause">The folder you selected doesn't contain any Star Citizen log files, or you selected the wrong folder.</div>
+      <div class="fix-label">How to fix</div>
+      <ol class="steps">
+        <li>Click <strong>📂 Set Log Folder</strong> again.</li>
+        <li>Navigate to: <div class="path">C:\Program Files\Roberts Space Industries\StarCitizen\LIVE\logbackups\</div></li>
+        <li>If SC is on a different drive, open the RSI Launcher → gear ⚙️ → <em>Show game folder</em> → open <code style="color:#7dd3fc">logbackups\</code>.</li>
+        <li>Make sure you select the <strong>logbackups</strong> folder itself, not a subfolder or the LIVE folder.</li>
+      </ol>
+    </div>
+
+    <!-- EXT-007 -->
+    <div class="error-card" id="EXT-007">
+      <div class="error-header">
+        <span class="error-code">EXT-007</span>
+        <span class="error-title">No webhook URL set</span>
+      </div>
+      <div class="error-cause">Send to Bot requires a Discord webhook URL to know which channel to post to.</div>
+      <div class="fix-label">How to fix</div>
+      <ol class="steps">
+        <li>Open the <strong>🤖 Bot Webhook URL</strong> section in the extension.</li>
+        <li>Paste the webhook URL your server admin provided.</li>
+        <li>Click <strong>Save Webhook URL</strong>.</li>
+      </ol>
+      <div class="tip"><strong>Admins:</strong> Discord → channel → Edit Channel → Integrations → Webhooks → New Webhook → Copy URL.</div>
+    </div>
+
+    <!-- EXT-008 -->
+    <div class="error-card" id="EXT-008">
+      <div class="error-header">
+        <span class="error-code">EXT-008</span>
+        <span class="error-title">Import Key not set</span>
+      </div>
+      <div class="error-cause">The bot requires a personal import key to verify that uploads came from you. The extension doesn't have one saved yet.</div>
+      <div class="fix-label">How to fix</div>
+      <ol class="steps">
+        <li>Open your Discord server and go to the <strong>Fleet Dashboard</strong>.</li>
+        <li>Click <strong>Personal Profile</strong>, then <strong>📤 Import</strong>.</li>
+        <li>Copy the import key shown there.</li>
+        <li>In the extension, open <strong>🔑 Bot Import Key</strong> and paste it in.</li>
+        <li>Click <strong>Save Import Key</strong>.</li>
+      </ol>
+    </div>
+
+    <!-- EXT-009 -->
+    <div class="error-card" id="EXT-009">
+      <div class="error-header">
+        <span class="error-code">EXT-009</span>
+        <span class="error-title">Analyzer auto-load failed</span>
+      </div>
+      <div class="error-cause">The extension couldn't inject data into the analyzer tab. A backup JSON file was downloaded automatically.</div>
+      <div class="fix-label">How to fix</div>
+      <ol class="steps">
+        <li>Find the downloaded <code style="color:#7dd3fc">sc-hangar-export-*.json</code> file in your Downloads folder.</li>
+        <li>Open <a href="/" target="_blank" rel="noopener">the analyzer</a> in a new tab.</li>
+        <li>Drag the JSON file onto the analyzer's drop zone.</li>
+      </ol>
+      <div class="tip">If this happens every time, a browser extension may be blocking scripts — see <a href="#EXT-012">EXT-012</a>.</div>
+    </div>
+
+    <!-- EXT-010 -->
+    <div class="error-card" id="EXT-010">
+      <div class="error-header">
+        <span class="error-code">EXT-010</span>
+        <span class="error-title">Webhook post failed</span>
+      </div>
+      <div class="error-cause">The extension posted to the Discord webhook but Discord returned an error. The error code and message are shown alongside this code.</div>
+      <div class="fix-label">Common causes</div>
+      <ul style="margin:8px 0 12px 16px;line-height:2">
+        <li><strong>400</strong> — Malformed request. Try again; if it persists, contact your admin.</li>
+        <li><strong>401 / 403</strong> — Webhook URL may be invalid or deleted. Ask your admin for a new one.</li>
+        <li><strong>404</strong> — Webhook no longer exists. Ask your admin to create a new one.</li>
+        <li><strong>429</strong> — Rate limited. Wait a minute and try again.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- Browser Blocking                                               -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section class="section" id="browser">
+    <h2>Browser Blocking Issues</h2>
+    <p>Some browsers and extensions block scripts on external sites, which prevents the extension from automatically loading your data into the analyzer. A backup JSON file is always downloaded when this happens so you never lose your data.</p>
+
+    <!-- EXT-011 -->
+    <div class="error-card" id="EXT-011">
+      <div class="error-header">
+        <span class="error-code">EXT-011</span>
+        <span class="error-title">Brave Shield blocking the analyzer</span>
+      </div>
+      <div class="error-cause">Brave's built-in shield is blocking script injection on the analyzer page.</div>
+      <div class="fix-label">How to fix</div>
+      <ol class="steps">
+        <li>Click the <strong>🦁 lion icon</strong> in Brave's address bar while the analyzer tab is active.</li>
+        <li>Change <strong>Shields</strong> to <strong>Down</strong> for this site, or click <strong>Advanced controls</strong> → set Scripts to <strong>Allow all scripts</strong>.</li>
+        <li>Reload the analyzer tab.</li>
+        <li>Click <strong>📊 Open in Analyzer</strong> in the extension again.</li>
+      </ol>
+      <div class="tip">💡 This only affects the analyzer site — lowering the shield here doesn't change your protection on other sites.</div>
+    </div>
+
+    <!-- EXT-012 -->
+    <div class="error-card" id="EXT-012">
+      <div class="error-header">
+        <span class="error-code">EXT-012</span>
+        <span class="error-title">Browser extension blocking scripts</span>
+      </div>
+      <div class="error-cause">An ad blocker or privacy extension (uBlock Origin, Privacy Badger, etc.) is blocking script execution on the analyzer page.</div>
+      <div class="fix-label">How to fix</div>
+      <ol class="steps">
+        <li>Click your ad blocker's icon in the toolbar while the analyzer tab is active.</li>
+        <li>Add the analyzer site to its allowlist / whitelist, or temporarily disable it for that tab.</li>
+        <li>Reload the analyzer tab and try again.</li>
+      </ol>
+      <div class="tip">💡 Alternatively, use the downloaded JSON backup — drag it onto the analyzer's drop zone and it loads the same way.</div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- Bot Setup                                                      -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section class="section" id="bot">
+    <h2>Bot Setup (Server Admins)</h2>
+
+    <h3>Create the import channel</h3>
+    <ol class="steps">
+      <li>Create a Discord channel for imports (e.g. <code style="color:#7dd3fc">#fleet-imports</code>). It can be private — only the bot needs access.</li>
+      <li>Give the bot the following permissions in that channel: <strong>View Channel</strong>, <strong>Send Messages</strong>, <strong>Manage Messages</strong>.</li>
+      <li><strong>Manage Messages</strong> is required — the bot deletes the webhook post immediately after reading it so the import key never sits in the channel. If the bot can't delete, it stops the import and notifies the user.</li>
+    </ol>
+
+    <h3>Create the webhook</h3>
+    <ol class="steps">
+      <li>Open the import channel → Edit Channel → Integrations → Webhooks → New Webhook.</li>
+      <li>Name it (e.g. "SC Hangar Importer") and copy the URL.</li>
+      <li>Share the URL with org members so they can paste it into the extension's <strong>🤖 Bot Webhook URL</strong> setting.</li>
+    </ol>
+    <div class="tip">⚠️ Treat the webhook URL as semi-sensitive. Anyone with it can post to the channel, though they still need a valid import key to trigger an actual import.</div>
+
+    <h3>Import keys</h3>
+    <p>Each member gets a personal import key automatically when they first open their profile in the Fleet Dashboard. They can view and regenerate it via <strong>Personal Profile → 📤 Import</strong>. Keys are stored in the bot's database — they are never transmitted except as part of the webhook post, which the bot immediately deletes.</p>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- FAQ                                                            -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section class="section" id="faq">
+    <h2>FAQ</h2>
+
+    <h3>Does the extension send my data anywhere automatically?</h3>
+    <p>No. The extension only acts when you click a button. Nothing is sent in the background. Data leaves your device only when you click <strong>Send to Bot</strong> (to the webhook) or <strong>Download JSON</strong> (to your local Downloads folder). Opening in Analyzer pushes data directly to the browser tab — nothing goes to a server.</p>
+
+    <h3>What exactly does the bot receive?</h3>
+    <p>When you click Send to Bot, the extension sends: ships owned, paints owned, blueprints found, session stats (missions, kills, deaths, aUEC earned), and hardware info (CPU, GPU, RAM, OS) from your log files. The webhook post is immediately deleted by the bot — no one in the channel can download your JSON file.</p>
+
+    <h3>Can someone spoof an import as me?</h3>
+    <p>Not if your import key is secret. The bot validates your personal key on every import. Without it, the upload is rejected. If you think your key was compromised, generate a new one from your Discord profile — the old key is immediately invalidated.</p>
+
+    <h3>My Send to Bot button is greyed out</h3>
+    <p>All four conditions must be met: hangar data fetched, Discord connected, webhook URL saved, and import key saved. Hover the button to see a tooltip explaining which step is missing.</p>
+
+    <h3>I'm not receiving a DM after importing</h3>
+    <p>The bot sends import results via Direct Message. Check that your Discord privacy settings allow DMs from server members (<strong>User Settings → Privacy & Safety → Allow direct messages from server members</strong>). If DMs are off, the bot posts a brief mention in the import channel instead.</p>
+
+    <h3>The extension worked before but now shows errors</h3>
+    <p>RSI occasionally changes their page structure, which can affect hangar fetching. Check for extension updates from your admin. If Discord Connect fails, try disconnecting and reconnecting — your token may have expired.</p>
+  </section>
+
+</div>
+
+<script>
+  // Highlight the target error card when page loads with a hash
+  function highlightTarget() {
+    const id = window.location.hash.slice(1);
+    if (!id) return;
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+  window.addEventListener('load', highlightTarget);
+  window.addEventListener('hashchange', highlightTarget);
+</script>
+
+</body>
+</html>
