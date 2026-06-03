@@ -1650,23 +1650,27 @@ function renderHangarPanel(handle, hangar) {
     const descHtml = card.description
       ? `<div class="ship-card-desc">${card.description}</div>` : '';
 
-    // Stats
+    // Stats — always show all 6
     const stats = [];
     if (card.cargo_scu !== null && card.cargo_scu !== undefined)
-      stats.push({ label:'Cargo', val: card.cargo_scu > 0 ? card.cargo_scu+' SCU' : '—', cls:card.cargo_scu > 0 ? 'green':'', });
+      stats.push({ label:'Cargo', val: card.cargo_scu > 0 ? card.cargo_scu+' SCU' : '—', cls: card.cargo_scu > 0 ? 'green' : '' });
     if (card.scm_speed)
       stats.push({ label:'SCM', val: card.scm_speed+' m/s', cls:'cyan' });
     if (card.dps)
       stats.push({ label:'DPS', val: fmtNum(card.dps), cls:'red' });
-    if (card.shields)
-      stats.push({ label:'Shields', val: fmtNum(card.shields), cls:'purple' });
-    if (card.insurance_min)
+    // Three new stats
+    if (card.shields !== null && card.shields !== undefined)
+      stats.push({ label:'Shield HP', val: fmtNum(card.shields), cls:'purple' });
+    if (card.qt_range !== null && card.qt_range !== undefined)
+      stats.push({ label:'QT Range', val: card.qt_range > 0 ? card.qt_range+' Gm' : '—', cls:'cyan' });
+    if (card.armor_phys !== null && card.armor_phys !== undefined)
+      stats.push({ label:'Armor Def', val: `${card.armor_phys}P / ${card.armor_energy ?? '?'}E`, cls:'' });
+    // Fallbacks if ship type lacks some of the above
+    if (!card.dps && card.insurance_min)
       stats.push({ label:'Claim', val: card.insurance_min+'m', cls:'' });
-    if (card.role)
-      stats.push({ label:'Role', val: card.role, cls:'' });
 
-    // Show up to 3 most useful stats
-    const statsHtml = stats.slice(0,3).map(st =>
+    // Show up to 6 stats in a 3-column grid (wraps to 2 rows)
+    const statsHtml = stats.slice(0,6).map(st =>
       `<div class="ship-stat">
         <span class="ship-stat-label">${st.label}</span>
         <span class="ship-stat-val ${st.cls}">${st.val}</span>
