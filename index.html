@@ -1000,6 +1000,7 @@ body::after {
 .ship-card.career-exploration::before { background: linear-gradient(90deg, var(--purple), transparent); }
 .ship-card.career-support::before  { background: linear-gradient(90deg, var(--green), transparent); }
 .ship-card.career-other::before    { background: linear-gradient(90deg, var(--border2), transparent); }
+.ship-card.career-vehicle::before  { background: linear-gradient(90deg, #4b8ea8, transparent); }
 [data-theme="dark"] .ship-card:hover {
   border-color: var(--border2);
   box-shadow: 0 0 20px rgba(0,200,255,0.08);
@@ -1653,6 +1654,85 @@ function renderHangarPanel(handle, hangar) {
     return String(n);
   }
 
+  // ── Ground vehicle enrichment ─────────────────────────────────────────────
+  // Cards with no ship_cards.json entry get data-needs-wiki set.
+  // This runs after the forEach, fetches SC Wiki data in parallel, and
+  // fills in speed / hull / shield / cargo stats for ground vehicles.
+  async function enrichVehicleCards() {
+    const blanks = [...document.querySelectorAll('[data-needs-wiki]')];
+    if (!blanks.length) return;
+
+    await Promise.all(blanks.map(async cardEl => {
+      const name = cardEl.dataset.needsWiki;
+      let wikiData;
+      try {
+        const resp = await fetch(
+          `https://api.star-citizen.wiki/api/v2/vehicles/${encodeURIComponent(name)}?locale=en_EN`
+        );
+        if (!resp.ok) return;
+        const raw = await resp.json();
+        wikiData = raw.data;
+        if (!wikiData || wikiData.type !== 'ground') return;
+      } catch (_) { return; }
+
+      // Build vehicle stats (up to 6 boxes)
+      const drive   = wikiData.drive || {};
+      const shield  = wikiData.shield || {};
+      const armor   = wikiData.armor || {};
+      const maxSpd  = drive.max_speed_kph || 0;
+      const revSpd  = drive.reverse_speed_kph || 0;
+      const hull    = wikiData.health || 0;
+      const armrHp  = armor.health || 0;
+      const shldHp  = shield.hp || 0;
+      const cargo   = wikiData.cargo_capacity || 0;
+      const mfr     = (wikiData.manufacturer || {}).name || '';
+      const driveType = (drive.wheels || {}).drive_type || '';
+
+      const vstats = [];
+      if (maxSpd) vstats.push({ label:'Top Speed', val: maxSpd + ' km/h', cls:'cyan' });
+      if (revSpd) vstats.push({ label:'Reverse',   val: revSpd + ' km/h', cls:'' });
+      if (hull)   vstats.push({ label:'Hull HP',   val: fmtNum(hull),     cls:'green' });
+      if (armrHp) vstats.push({ label:'Armor HP',  val: fmtNum(armrHp),  cls:'' });
+      if (shldHp) vstats.push({ label:'Shield HP', val: fmtNum(shldHp),  cls:'purple' });
+      if (cargo)  vstats.push({ label:'Cargo',     val: cargo + ' SCU',  cls:'green' });
+
+      const statsHtml = vstats.slice(0,6).map(st =>
+        `<div class="ship-stat">
+          <span class="ship-stat-label">${st.label}</span>
+          <span class="ship-stat-val ${st.cls}">${st.val}</span>
+        </div>`
+      ).join('');
+
+      if (!statsHtml) return;
+
+      // Insert stats at top of card body (before paints)
+      const body = cardEl.querySelector('.ship-card-body');
+      if (body) {
+        const statsDiv = document.createElement('div');
+        statsDiv.className = 'ship-card-stats';
+        statsDiv.innerHTML = statsHtml;
+        body.insertBefore(statsDiv, body.firstChild);
+      }
+
+      // Add "Vehicle" badge and update manufacturer if wiki has a better name
+      const badgesEl = cardEl.querySelector('.ship-card-badges');
+      if (badgesEl) {
+        const badge = document.createElement('span');
+        badge.className = 'badge-career career-other';
+        badge.textContent = driveType ? `${driveType}` : 'Vehicle';
+        badgesEl.appendChild(badge);
+      }
+      if (mfr) {
+        const mfgEl = cardEl.querySelector('.ship-card-mfg');
+        if (mfgEl && !mfgEl.textContent.trim()) mfgEl.textContent = mfr;
+      }
+
+      // Apply vehicle top-bar color
+      cardEl.classList.add('career-vehicle');
+      cardEl.removeAttribute('data-needs-wiki');
+    }));
+  }
+
   // ── Render ship cards ──────────────────────────────────────────────────────
   document.getElementById('hangar-ships-count').textContent = ships.length;
   const hasCards = !!shipCards;
@@ -1667,6 +1747,8 @@ function renderHangarPanel(handle, hangar) {
     const mfgName  = mfgDisplayName(s.manufacturer);
     const career   = card.career || '';
     const cClass   = careerClass(career);
+    // Detect whether this card has any Erkul data
+    const hasCardData = !!(card.career || card.dps || card.scm_speed != null || card.shields != null);
     const myPaints = shipPaints[s.name] || [];
 
     // Card header
@@ -1763,8 +1845,14 @@ function renderHangarPanel(handle, hangar) {
       });
     }
 
+    // Tag cards with no Erkul data — enrichVehicleCards() will fill these in from the wiki
+    if (!hasCardData) div.dataset.needsWiki = s.name;
+
     grid.appendChild(div);
   });
+
+  // Async-enrich any blank cards that might be ground vehicles
+  enrichVehicleCards();
 
   // Close dropdowns on outside click
   document.addEventListener('click', () => {
