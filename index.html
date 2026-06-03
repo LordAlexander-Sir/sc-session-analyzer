@@ -1981,6 +1981,20 @@ dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classL
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
 dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); processFiles([...e.dataTransfer.files]); });
 fileInput.addEventListener('change', e => processFiles([...e.target.files]));
+
+// ── Extension bridge ──────────────────────────────────────────────────────────
+// The SC Hangar Exporter extension calls window.scExtensionLoad(jsonStr) to
+// push data directly without relying on drag-and-drop simulation (which is
+// blocked in some browsers even with shields/blockers disabled).
+window.scExtensionLoad = function(jsonStr) {
+  try {
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const file = new File([blob], 'sc-extension-export.json', { type: 'application/json' });
+    processFiles([file]);
+  } catch (e) {
+    console.error('[analyzer] scExtensionLoad failed:', e);
+  }
+};
 document.getElementById('reset-btn').addEventListener('click', () => {
   dashboard.style.display = 'none';
   dropZone.style.display  = 'block';
