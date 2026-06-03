@@ -946,6 +946,256 @@ body::after {
 .hangar-promo-step { display: flex; align-items: flex-start; gap: 10px; }
 .hangar-promo-step-num { color: var(--cyan); font-weight: 700; font-family: 'Consolas', monospace; flex-shrink: 0; }
 
+/* ── SHIP CARDS ── */
+.ship-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 14px;
+}
+.ship-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color .2s, box-shadow .2s;
+  position: relative;
+}
+.ship-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.ship-card.career-combat::before   { background: linear-gradient(90deg, var(--red), transparent); }
+.ship-card.career-industrial::before { background: linear-gradient(90deg, var(--gold), transparent); }
+.ship-card.career-transporter::before { background: linear-gradient(90deg, var(--cyan), transparent); }
+.ship-card.career-exploration::before { background: linear-gradient(90deg, var(--purple), transparent); }
+.ship-card.career-support::before  { background: linear-gradient(90deg, var(--green), transparent); }
+.ship-card.career-other::before    { background: linear-gradient(90deg, var(--border2), transparent); }
+[data-theme="dark"] .ship-card:hover {
+  border-color: var(--border2);
+  box-shadow: 0 0 20px rgba(0,200,255,0.08);
+}
+.ship-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.ship-card-logo {
+  height: 22px;
+  width: auto;
+  flex-shrink: 0;
+  opacity: 0.7;
+  filter: brightness(10);
+}
+[data-theme="dark"] .ship-card-logo { opacity: 0.55; }
+:root .ship-card-logo { filter: brightness(0); opacity: 0.45; }
+.ship-card-titles { flex: 1; min-width: 0; }
+.ship-card-name {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-bright);
+  letter-spacing: .02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ship-card-mfg {
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: .04em;
+  margin-top: 1px;
+}
+.ship-card-badges { display: flex; gap: 4px; flex-shrink: 0; }
+.badge-lti {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  color: var(--green);
+  background: var(--green-dim);
+  border: 1px solid rgba(0,232,122,0.25);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+.badge-career {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+.badge-career.combat      { color: var(--red);    background: var(--red-dim);    border: 1px solid rgba(255,34,68,.2); }
+.badge-career.industrial  { color: var(--gold);   background: var(--gold-dim);   border: 1px solid rgba(255,208,48,.2); }
+.badge-career.transporter { color: var(--cyan);   background: var(--cyan-dim);   border: 1px solid rgba(0,200,255,.2); }
+.badge-career.exploration { color: var(--purple); background: var(--purple-dim); border: 1px solid rgba(153,85,255,.2); }
+.badge-career.support     { color: var(--green);  background: var(--green-dim);  border: 1px solid rgba(0,232,122,.2); }
+.badge-career.other       { color: var(--text-dim); background: var(--surface); border: 1px solid var(--border); }
+
+.ship-card-body { padding: 12px 14px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.ship-card-desc {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ship-card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.ship-stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 8px;
+  text-align: center;
+}
+.ship-stat-label {
+  display: block;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 3px;
+}
+.ship-stat-val {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-bright);
+  font-variant-numeric: tabular-nums;
+}
+.ship-stat-val.cyan   { color: var(--cyan); }
+.ship-stat-val.green  { color: var(--green); }
+.ship-stat-val.gold   { color: var(--gold); }
+.ship-stat-val.red    { color: var(--red); }
+.ship-stat-val.purple { color: var(--purple); }
+[data-theme="dark"] .ship-stat-val { text-shadow: 0 0 12px currentColor; }
+
+.ship-card-footer {
+  padding: 10px 14px 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.ship-paints-btn {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  color: var(--text-dim);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all .15s;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+.ship-paints-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+.ship-paints-btn .paint-caret { font-size: 8px; transition: transform .2s; }
+.ship-card.paints-open .paint-caret { transform: rotate(180deg); }
+.ship-no-paints {
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: .04em;
+  opacity: .6;
+}
+.ship-paints-list {
+  display: none;
+  padding: 8px 0 2px;
+  border-top: 1px solid var(--border);
+  margin: 4px 0 0;
+}
+.ship-card.paints-open .ship-paints-list { display: block; }
+.ship-paint-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  font-size: 11px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+.ship-paint-item:last-child { border-bottom: none; }
+.ship-paint-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--cyan);
+  flex-shrink: 0;
+}
+.ship-erkul-link {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--cyan);
+  text-decoration: none;
+  letter-spacing: .04em;
+  opacity: .8;
+  transition: opacity .15s;
+}
+.ship-erkul-link:hover { opacity: 1; }
+
+/* ── OTHER PAINTS ── */
+.other-paints-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+.other-paints-mfg {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+.other-paints-mfg-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.other-paints-mfg-logo {
+  height: 14px;
+  width: auto;
+  opacity: 0.5;
+  filter: brightness(10);
+  flex-shrink: 0;
+}
+:root .other-paints-mfg-logo { filter: brightness(0); opacity: 0.4; }
+.other-paints-mfg-name {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.other-paint-row {
+  font-size: 11px;
+  color: var(--text);
+  padding: 3px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.other-paint-row::before {
+  content: '';
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--border2);
+  flex-shrink: 0;
+}
+
 /* ── SITE FOOTER ── */
 .site-footer {
   margin-top: 48px;
@@ -1245,26 +1495,45 @@ body::after {
       </div>
       <!-- Hangar data panels (shown when data is loaded) -->
       <div id="hangar-data" style="display:none">
-        <div class="two-col">
-          <div class="panel">
-            <div class="panel-hd">🚀 Ships Owned <span class="count" id="hangar-ships-count"></span></div>
-            <div class="scrollable" id="hangar-ships-list"></div>
+
+        <!-- Fleet registry — ship cards -->
+        <div class="panel">
+          <div class="panel-hd">
+            Fleet Registry
+            <span class="count" id="hangar-ships-count"></span>
+            <span id="hangar-no-cards-note" style="display:none;font-size:10px;font-weight:400;color:var(--text-dim);margin-left:8px;text-transform:none;letter-spacing:0">
+              Drop <strong>ship_cards.json</strong> for loadout details
+            </span>
           </div>
-          <div class="panel">
-            <div class="panel-hd">🎨 Paints <span class="count" id="hangar-paints-count"></span></div>
-            <div class="scrollable"><ul id="hangar-paints-list" style="list-style:none"></ul></div>
-          </div>
+          <div class="ship-cards-grid" id="hangar-ships-grid"></div>
         </div>
+
+        <!-- Other paints (ships not in hangar) -->
+        <div class="panel" id="other-paints-panel" style="display:none">
+          <div class="panel-hd">
+            Other Paints
+            <span class="count" id="other-paints-count"></span>
+            <span style="font-size:10px;font-weight:400;color:var(--text-dim);margin-left:6px;text-transform:none;letter-spacing:0">Paints for ships not in your hangar</span>
+          </div>
+          <div class="other-paints-grid" id="other-paints-grid"></div>
+        </div>
+
+        <!-- Pledges + Hangar BPs -->
         <div class="two-col">
           <div class="panel">
             <div class="panel-hd">📋 Unreleased Pledges <span class="count" id="hangar-pledges-count"></span></div>
             <div class="scrollable"><ul id="hangar-pledges-list" style="list-style:none"></ul></div>
           </div>
           <div class="panel">
-            <div class="panel-hd">🔵 Blueprints <span class="count" id="hangar-bp-count"></span></div>
+            <div class="panel-hd">🔵 Hangar Blueprints <span class="count" id="hangar-bp-count"></span></div>
             <div class="scrollable"><ul id="hangar-bp-list" style="list-style:none"></ul></div>
           </div>
         </div>
+
+        <!-- Hidden count elements kept for JS compatibility -->
+        <span id="hangar-paints-count" style="display:none"></span>
+        <ul id="hangar-paints-list" style="display:none"></ul>
+        <div id="hangar-ships-list" style="display:none"></div>
       </div>
     </div>
   </div>
@@ -1297,28 +1566,216 @@ function renderHangarPanel(handle, hangar) {
   const panel = document.getElementById('hangar-panel');
   if (!panel) return;
 
-  const ships    = hangar.ships    || [];
-  const paints   = hangar.paints   || [];
-  const bps      = hangar.blueprints || [];
-  const pledges  = hangar.pledges  || [];
+  const ships   = hangar.ships    || [];
+  const paints  = hangar.paints   || [];
+  const bps     = hangar.blueprints || [];
+  const pledges = hangar.pledges  || [];
 
   // Show data section, hide empty state
   document.getElementById('hangar-empty').style.display = 'none';
   document.getElementById('hangar-data').style.display  = 'block';
 
-  // Ships owned — with manufacturer logos
-  const shipsList = document.getElementById('hangar-ships-list');
+  // ── Match paints to ships ──────────────────────────────────────────────────
+  // Paint names are "Ship Name - Paint Name" (split on first " - ")
+  const shipPaints = {};   // ship.name -> [paint display names]
+  ships.forEach(s => { shipPaints[s.name] = []; });
+
+  const otherPaints = [];  // paints for ships not in hangar
+
+  paints.forEach(p => {
+    const dashIdx = p.name.indexOf(' - ');
+    if (dashIdx === -1) { otherPaints.push(p); return; }
+    const prefix      = p.name.substring(0, dashIdx).trim();
+    const paintName   = p.name.substring(dashIdx + 3).trim();
+
+    // Match: exact → starts-with (e.g. "Constellation" -> "Constellation Taurus")
+    const matched = ships.find(s =>
+      s.name === prefix ||
+      s.name.startsWith(prefix) ||
+      prefix.startsWith(s.name)
+    );
+    if (matched) {
+      shipPaints[matched.name].push(paintName);
+    } else {
+      otherPaints.push(p);
+    }
+  });
+
+  // ── Career classification helpers ─────────────────────────────────────────
+  function careerClass(career) {
+    const c = (career || '').toLowerCase();
+    if (c.includes('combat') || c.includes('military')) return 'combat';
+    if (c.includes('industrial') || c.includes('mining') || c.includes('salvage')) return 'industrial';
+    if (c.includes('transport') || c.includes('freight') || c.includes('cargo')) return 'transporter';
+    if (c.includes('explor') || c.includes('scout')) return 'exploration';
+    if (c.includes('support') || c.includes('medical') || c.includes('repair')) return 'support';
+    return 'other';
+  }
+
+  function fmtNum(n) {
+    if (n === null || n === undefined) return '—';
+    if (n >= 1000000) return (n/1000000).toFixed(1)+'M';
+    if (n >= 1000)    return (n/1000).toFixed(0)+'K';
+    return String(n);
+  }
+
+  // ── Render ship cards ──────────────────────────────────────────────────────
   document.getElementById('hangar-ships-count').textContent = ships.length;
-  shipsList.innerHTML = ships.map(s => {
-    const logoSrc = s.manufacturer ? MFG_LOGOS[s.manufacturer] : null;
-    const logoImg = logoSrc
-      ? `<img class="mfg-logo" src="${logoSrc}" alt="${s.manufacturer}" onerror="this.style.display='none'">`
-      : '<span style="width:20px;display:inline-block"></span>';
-    const qty = s.quantity > 1 ? ` <span style="color:var(--cyan);font-size:10px">×${s.quantity}</span>` : '';
-    const lti = s.lti ? ' <span style="color:var(--green);font-size:9px;background:var(--green-dim);padding:1px 5px;border-radius:8px;font-weight:600">LTI</span>' : '';
-    const mfg = s.manufacturer ? `<span class="hangar-ship-mfg">${s.manufacturer}</span>` : '';
-    return `<div class="hangar-ship-row">${logoImg}<span class="hangar-ship-name">${s.name}${qty}${lti}${mfg}</span></div>`;
-  }).join('');
+  const hasCards = !!shipCards;
+  document.getElementById('hangar-no-cards-note').style.display = hasCards ? 'none' : 'inline';
+
+  const grid = document.getElementById('hangar-ships-grid');
+  grid.innerHTML = '';
+
+  ships.forEach(s => {
+    const card = shipCards?.[s.name] || {};
+    const logoUrl  = mfgLogoUrl(s.manufacturer);
+    const mfgName  = mfgDisplayName(s.manufacturer);
+    const career   = card.career || '';
+    const cClass   = careerClass(career);
+    const myPaints = shipPaints[s.name] || [];
+
+    // Card header
+    const logoHtml = logoUrl
+      ? `<img class="ship-card-logo" src="${logoUrl}" alt="${mfgName}" onerror="this.style.display='none'">`
+      : '';
+
+    const ltiHtml = s.lti
+      ? `<span class="badge-lti">LTI</span>` : '';
+
+    const careerHtml = career
+      ? `<span class="badge-career ${cClass}">${career}</span>` : '';
+
+    // Description
+    const descHtml = card.description
+      ? `<div class="ship-card-desc">${card.description}</div>` : '';
+
+    // Stats
+    const stats = [];
+    if (card.cargo_scu !== null && card.cargo_scu !== undefined)
+      stats.push({ label:'Cargo', val: card.cargo_scu > 0 ? card.cargo_scu+' SCU' : '—', cls:card.cargo_scu > 0 ? 'green':'', });
+    if (card.scm_speed)
+      stats.push({ label:'SCM', val: card.scm_speed+' m/s', cls:'cyan' });
+    if (card.dps)
+      stats.push({ label:'DPS', val: fmtNum(card.dps), cls:'red' });
+    if (card.shields)
+      stats.push({ label:'Shields', val: fmtNum(card.shields), cls:'purple' });
+    if (card.insurance_min)
+      stats.push({ label:'Claim', val: card.insurance_min+'m', cls:'' });
+    if (card.role)
+      stats.push({ label:'Role', val: card.role, cls:'' });
+
+    // Show up to 3 most useful stats
+    const statsHtml = stats.slice(0,3).map(st =>
+      `<div class="ship-stat">
+        <span class="ship-stat-label">${st.label}</span>
+        <span class="ship-stat-val ${st.cls}">${st.val}</span>
+      </div>`
+    ).join('');
+
+    // Paints dropdown
+    let paintsHtml = '';
+    if (myPaints.length > 0) {
+      const paintItems = myPaints.map(p =>
+        `<div class="ship-paint-item"><span class="ship-paint-dot"></span>${p}</div>`
+      ).join('');
+      paintsHtml = `
+        <button class="ship-paints-btn">
+          🎨 ${myPaints.length} Paint${myPaints.length > 1 ? 's' : ''} <span class="paint-caret">▾</span>
+        </button>
+        <div class="ship-paints-list">${paintItems}</div>`;
+    } else {
+      paintsHtml = `<span class="ship-no-paints">No paints</span>`;
+    }
+
+    // Erkul link
+    const erkulHtml = card.erkul_url
+      ? `<a class="ship-erkul-link" href="${card.erkul_url}" target="_blank" rel="noopener">Loadout ↗</a>`
+      : '';
+
+    const div = document.createElement('div');
+    div.className = `ship-card career-${cClass}`;
+    div.innerHTML = `
+      <div class="ship-card-header">
+        ${logoHtml}
+        <div class="ship-card-titles">
+          <div class="ship-card-name">${s.name}</div>
+          <div class="ship-card-mfg">${mfgName}</div>
+        </div>
+        <div class="ship-card-badges">${ltiHtml}${careerHtml}</div>
+      </div>
+      <div class="ship-card-body">
+        ${descHtml}
+        ${statsHtml ? `<div class="ship-card-stats">${statsHtml}</div>` : ''}
+        <div>${paintsHtml}</div>
+      </div>
+      <div class="ship-card-footer">
+        <span></span>
+        ${erkulHtml}
+      </div>`;
+
+    // Paint dropdown toggle
+    const btn = div.querySelector('.ship-paints-btn');
+    if (btn) {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const isOpen = div.classList.contains('paints-open');
+        document.querySelectorAll('.ship-card.paints-open').forEach(c => c.classList.remove('paints-open'));
+        if (!isOpen) div.classList.add('paints-open');
+      });
+    }
+
+    grid.appendChild(div);
+  });
+
+  // Close dropdowns on outside click
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.ship-card.paints-open').forEach(c => c.classList.remove('paints-open'));
+  }, { once: false });
+
+  // ── Other Paints ───────────────────────────────────────────────────────────
+  const otherPanel = document.getElementById('other-paints-panel');
+  if (otherPaints.length > 0) {
+    otherPanel.style.display = 'block';
+    document.getElementById('other-paints-count').textContent = otherPaints.length;
+
+    // Group by manufacturer code
+    const byMfg = {};
+    otherPaints.forEach(p => {
+      const code = mfgCode(p.manufacturer) || 'Other';
+      if (!byMfg[code]) byMfg[code] = { mfg: p.manufacturer, paints: [] };
+      const dashIdx  = p.name.indexOf(' - ');
+      const paintDisplay = dashIdx >= 0 ? p.name.substring(dashIdx+3).trim() : p.name;
+      byMfg[code].paints.push({ display: paintDisplay, ship: dashIdx >= 0 ? p.name.substring(0,dashIdx).trim() : '' });
+    });
+
+    const ogrid = document.getElementById('other-paints-grid');
+    ogrid.innerHTML = '';
+    Object.entries(byMfg).sort((a,b) => a[0].localeCompare(b[0])).forEach(([code, group]) => {
+      const logoUrl = MFG_LOGOS[code] || null;
+      const logoHtml = logoUrl
+        ? `<img class="other-paints-mfg-logo" src="${logoUrl}" alt="${code}" onerror="this.style.display='none'">`
+        : '';
+      const name = mfgDisplayName(group.mfg) || code;
+
+      const rows = group.paints.map(p =>
+        `<div class="other-paint-row">${p.ship ? `<strong>${p.ship}</strong> — ` : ''}${p.display}</div>`
+      ).join('');
+
+      const div = document.createElement('div');
+      div.className = 'other-paints-mfg';
+      div.innerHTML = `
+        <div class="other-paints-mfg-header">
+          ${logoHtml}
+          <span class="other-paints-mfg-name">${name}</span>
+          <span style="margin-left:auto;font-size:10px;color:var(--text-dim);font-family:'Consolas',monospace">${group.paints.length}</span>
+        </div>
+        ${rows}`;
+      ogrid.appendChild(div);
+    });
+  } else {
+    otherPanel.style.display = 'none';
+  }
 
   // Paints
   const paintsList = document.getElementById('hangar-paints-list');
@@ -1414,23 +1871,65 @@ document.getElementById('tab-nav').addEventListener('click', e => {
   document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
 });
 
-// ── Manufacturer logo map ──
+// ── Manufacturer logo map (by display name AND by RSI code) ──
+const L = './assets/logos/';
 const MFG_LOGOS = {
-  'Aegis':                 './assets/logos/AEGIS_DYNAMICS_WHITE.png',
-  'Anvil':                 './assets/logos/ANVIL_AEROSPACE_WHITE.png',
-  'Drake':                 './assets/logos/DRAKE_INTERPLANETARY_WHITE.png',
-  'Origin':                './assets/logos/ORIGIN_JUMPWORKS_WHITE.png',
-  'RSI':                   './assets/logos/RSI_WHITE.png',
-  'MISC':                  './assets/logos/MISC_Logo_SecondaryMark_white.png',
-  'Crusader':              './assets/logos/CRUSADER_INDUSTRIES_WHITE.png',
-  'ARGO':                  './assets/logos/Argo_Logo_Main_Light.png',
-  'Tumbril':               './assets/logos/TUMBRIL_WHITE.png',
-  'Banu':                  './assets/logos/BANU_WHITE.png',
-  'Esperia':               './assets/logos/ESPERIA_WHITE.png',
-  'Kruger':                './assets/logos/KRUGER_INTERGALACTIC_WHITE.png',
-  'Consolidated Outland':  './assets/logos/CONSOLIDATED_OUTLAND_WHITE.png',
-  'Aopoa':                 './assets/logos/Aopoa_Logo_Main_Light.png',
-  'Gatac':                 './assets/logos/Gatac_Logo_Main_Light.png',
+  // By short display name (used in ships-flown list)
+  'Aegis':                L+'AEGIS_DYNAMICS_WHITE.png',
+  'Anvil':                L+'ANVIL_AEROSPACE_WHITE.png',
+  'Drake':                L+'DRAKE_INTERPLANETARY_WHITE.png',
+  'Origin':               L+'ORIGIN_JUMPWORKS_WHITE.png',
+  'RSI':                  L+'RSI_WHITE.png',
+  'MISC':                 L+'MISC_Logo_SecondaryMark_white.png',
+  'Crusader':             L+'CRUSADER_INDUSTRIES_WHITE.png',
+  'ARGO':                 L+'Argo_Logo_Main_Light.png',
+  'Tumbril':              L+'TUMBRIL_WHITE.png',
+  'Banu':                 L+'BANU_WHITE.png',
+  'Esperia':              L+'ESPERIA_WHITE.png',
+  'Kruger':               L+'KRUGER_INTERGALACTIC_WHITE.png',
+  'Consolidated Outland': L+'CONSOLIDATED_OUTLAND_WHITE.png',
+  'Aopoa':                L+'Aopoa_Logo_Main_Light.png',
+  'Gatac':                L+'Gatac_Logo_Main_Light.png',
+  'Mirai':                L+'MISC_Mirai_Logo_IconMark_4k.png',
+  // By RSI manufacturer code — parsed from "(CODE)" in hangar export
+  'AEGS': L+'AEGIS_DYNAMICS_WHITE.png',
+  'ANVL': L+'ANVIL_AEROSPACE_WHITE.png',
+  'DRAK': L+'DRAKE_INTERPLANETARY_WHITE.png',
+  'ORIG': L+'ORIGIN_JUMPWORKS_WHITE.png',
+  'RSI':  L+'RSI_WHITE.png',
+  'MISC': L+'MISC_Logo_SecondaryMark_white.png',
+  'CRUS': L+'CRUSADER_INDUSTRIES_WHITE.png',
+  'ARGO': L+'Argo_Logo_Main_Light.png',
+  'TMBL': L+'TUMBRIL_WHITE.png',
+  'BANU': L+'BANU_WHITE.png',
+  'ESPR': L+'ESPERIA_WHITE.png',
+  'KRIG': L+'KRUGER_INTERGALACTIC_WHITE.png',
+  'CNOU': L+'CONSOLIDATED_OUTLAND_WHITE.png',
+  'XIAN': L+'Aopoa_Logo_Main_Light.png',
+  'GAMA': L+'Gatac_Logo_Main_Light.png',
+  'MRAI': L+'MISC_Mirai_Logo_IconMark_4k.png',
+  'GRIN': null,  // Greycat — not in fan kit
+};
+
+// Extract manufacturer code from "(CODE)" string
+function mfgCode(manufacturerStr) {
+  const m = (manufacturerStr || '').match(/\(([A-Z]+)\)/);
+  return m ? m[1] : null;
+}
+function mfgLogoUrl(manufacturerStr) {
+  const code = mfgCode(manufacturerStr);
+  return (code && MFG_LOGOS[code]) ? MFG_LOGOS[code] : null;
+}
+function mfgDisplayName(manufacturerStr) {
+  // "Aegis Dynamics (AEGS)" -> "Aegis Dynamics"
+  return (manufacturerStr || '').replace(/\s*\([A-Z]+\)\s*$/, '').trim();
+}
+
+// ── Faction logos ──
+const FACTION_LOGOS = {
+  'Headhunters':               L+'Headhunters_icon.png',
+  'Citizens for Prosperity':   L+'CFP_icon_main_cream.png',
+  'Frontier Fighters':         L+'Frontier_Fighters_icon.png',
 };
 
 // ── Regex patterns ──
@@ -1821,9 +2320,10 @@ function parseLog(text, filename) {
   };
 }
 
-let missionPools = null;   // loaded from mission_pools.json (auto-fetch on GitHub Pages, or drag-drop locally)
-let allSessions  = [];     // module-level session list; set by renderDashboard, read by autoLoad/processFiles
-let rerenderFn   = () => {}; // module-level proxy; points to renderDashboard's inner rerender once loaded
+let missionPools = null;   // loaded from mission_pools.json
+let shipCards    = null;   // loaded from ship_cards.json
+let allSessions  = [];
+let rerenderFn   = () => {};
 
 // Auto-fetch mission_pools.json when served from a web server (GitHub Pages).
 // Silently skips if the file isn't present (local file:// use).
@@ -1840,6 +2340,20 @@ async function autoLoadMissionPools() {
   } catch (_) { /* silently ignore — user can still drag-drop the file manually */ }
 }
 autoLoadMissionPools();
+
+// Auto-fetch ship_cards.json when served from a web server
+async function autoLoadShipCards() {
+  try {
+    const resp = await fetch('./ship_cards.json');
+    if (!resp.ok) return;
+    const data = await resp.json();
+    if (typeof data === 'object' && data !== null) {
+      shipCards = data;
+      console.log(`[analyzer] Auto-loaded ship_cards.json — ${Object.keys(data).length} ships`);
+    }
+  } catch (_) { /* silently ignore — user can drag-drop the file manually */ }
+}
+autoLoadShipCards();
 
 // ── Extension handoff — reads data injected via URL hash by the Chrome ext ────
 // When the SC Hangar Exporter extension clicks "Open in Analyzer", it opens
@@ -1965,6 +2479,16 @@ function processFiles(files) {
         if (data.pools && data.total_pools !== undefined) {
           missionPools = data;
           console.log(`[analyzer] Loaded mission_pools.json — ${data.total_pools} pools, game ver ${data.game_version}`);
+        }
+
+        // ── ship_cards.json ──
+        if (typeof data === 'object' && data !== null && !data.type && !data.pools) {
+          // Check for ship-card shape: keys map to objects with 'erkul_url' or 'career'
+          const sample = Object.values(data)[0];
+          if (sample && ('erkul_url' in sample || 'career' in sample || 'description' in sample)) {
+            shipCards = data;
+            console.log(`[analyzer] Loaded ship_cards.json — ${Object.keys(data).length} ships`);
+          }
         }
       } catch (e) {
         console.warn(`[analyzer] Could not parse ${filename}:`, e);
