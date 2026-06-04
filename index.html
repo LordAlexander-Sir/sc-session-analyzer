@@ -1761,10 +1761,23 @@ function renderHangarPanel(handle, hangar) {
 
       } else {
         // ── Concept pledge: description + loaner list + loaner stat cards ─────
-        const rawLoaners = wikiData.loaner || [];
-        const loaners = rawLoaners
-          .map(l => (typeof l === 'string' ? l : l.name || l.ship_name || ''))
-          .filter(Boolean);
+        // Use official CIG loaner matrix first; fall back to wiki API data
+        const loaners = (() => {
+          if (loanerMatrix) {
+            const lower = name.toLowerCase();
+            // Direct key match, then partial match (handles "carrack / carrack expedition" style keys)
+            const direct = loanerMatrix[lower];
+            if (direct) return direct;
+            const partial = Object.entries(loanerMatrix).find(([k]) =>
+              k.split(/[\/,]/).some(part => part.trim() === lower)
+            );
+            if (partial) return partial[1];
+          }
+          // Fallback to wiki API loaner field
+          return (wikiData.loaner || [])
+            .map(l => (typeof l === 'string' ? l : l.name || l.ship_name || ''))
+            .filter(Boolean);
+        })();
 
         if (body) {
           // Loaner note
@@ -2609,6 +2622,7 @@ function parseLog(text, filename) {
 
 let missionPools = null;   // loaded from mission_pools.json
 let shipCards    = null;   // loaded from ship_cards.json
+let loanerMatrix = null;   // loaded from loaner_matrix.json (official CIG loaner assignments)
 let allSessions  = [];
 let rerenderFn   = () => {};
 
@@ -2627,6 +2641,20 @@ async function autoLoadMissionPools() {
   } catch (_) { /* silently ignore — user can still drag-drop the file manually */ }
 }
 autoLoadMissionPools();
+
+// Auto-fetch loaner_matrix.json — official CIG loaner ship assignments
+async function autoLoadLoanerMatrix() {
+  try {
+    const resp = await fetch('./loaner_matrix.json');
+    if (!resp.ok) return;
+    const data = await resp.json();
+    if (typeof data === 'object' && data !== null) {
+      loanerMatrix = data;
+      console.log(`[analyzer] Auto-loaded loaner_matrix.json — ${Object.keys(data).length} entries`);
+    }
+  } catch (_) {}
+}
+autoLoadLoanerMatrix();
 
 // Auto-fetch ship_cards.json when served from a web server
 async function autoLoadShipCards() {

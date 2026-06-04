@@ -1,0 +1,207 @@
+{
+  "_comment": "Official RSI Loaner Ship Matrix — auto-updated by update_loaner_matrix.py",
+  "_source": "https://support.robertsspaceindustries.com/hc/en-us/articles/360003093114-Loaner-Ship-Matrix",
+  "_rsi_updated": "2026-05-24T16:02:51Z",
+  "_bot_updated": "2026-06-03",
+  "_note": "Multiple loaners listed where RSI assigns more than one. First entry is the primary flyable ship.",
+  "600i explorer and executive": [
+    "Cyclone"
+  ],
+  "890 jump": [
+    "85x"
+  ],
+  "arrastra": [
+    "Prospector",
+    "Mole",
+    "Arrow"
+  ],
+  "carrack / carrack expedition": [
+    "C8 Pisces",
+    "URSA Rover"
+  ],
+  "carrack w/ c8x / carrack expedition w/c8x": [
+    "C8X Pisces Expedition",
+    "URSA Rover"
+  ],
+  "centurion": [
+    "Aurora MR"
+  ],
+  "constellation andromeda": [
+    "P-52 Merlin"
+  ],
+  "constellation aquila": [
+    "P-52 Merlin",
+    "URSA Rover"
+  ],
+  "constellation phoenix": [
+    "P-72 Archimedes",
+    "Lynx Rover"
+  ],
+  "constellation phoenix emerald": [
+    "P-72 Archimedes",
+    "Lynx Rover"
+  ],
+  "crucible": [
+    "Constellation Andromeda"
+  ],
+  "csv-sm": [
+    "Aurora MR"
+  ],
+  "cyclone variants": [
+    "Aurora MR"
+  ],
+  "dragonfly": [
+    "Aurora MR"
+  ],
+  "e1 spirit": [
+    "A1 Spirit"
+  ],
+  "endeavor": [
+    "Starfarer",
+    "Cutlass Red"
+  ],
+  "expanse": [
+    "Prospector",
+    "Reliant Kore"
+  ],
+  "fury variants": [
+    "Aurora MR"
+  ],
+  "g12 variants": [
+    "Lynx"
+  ],
+  "galaxy": [
+    "Carrack"
+  ],
+  "genesis starliner": [
+    "Hercules C2"
+  ],
+  "hull d": [
+    "Hull C",
+    "Hercules C2"
+  ],
+  "hull e": [
+    "Hull C",
+    "Hercules C2"
+  ],
+  "idris-m": [
+    "F7C-M Super Hornet",
+    "MPUV Passenger"
+  ],
+  "idris-p": [
+    "F7C-M Super Hornet",
+    "MPUV Passenger"
+  ],
+  "javelin": [
+    "Idris-P",
+    "MPUV Cargo"
+  ],
+  "kraken": [
+    "Polaris",
+    "Ironclad Assault",
+    "Buccaneer"
+  ],
+  "kraken privateer": [
+    "Polaris",
+    "Ironclad",
+    "Buccaneer"
+  ],
+  "liberator": [
+    "Ironclad Assault",
+    "F7C-M Super Hornet"
+  ],
+  "legionnaire": [
+    "Vanguard Hoplite"
+  ],
+  "lynx": [
+    "Aurora MR"
+  ],
+  "mantis": [
+    "Aurora LN"
+  ],
+  "merchantman": [
+    "Hull C",
+    "Defender",
+    "Hercules C2"
+  ],
+  "mole": [
+    "Prospector"
+  ],
+  "mpuv-tractor": [
+    "Aurora MR"
+  ],
+  "mxc": [
+    "Aurora MR"
+  ],
+  "mule": [
+    "Aurora MR"
+  ],
+  "nautilus": [
+    "Polaris",
+    "Avenger Titan"
+  ],
+  "nova": [
+    "Aurora MR"
+  ],
+  "nox": [
+    "Aurora MR"
+  ],
+  "odin": [
+    "Idris-P"
+  ],
+  "odyssey": [
+    "Carrack",
+    "Reliant Kore"
+  ],
+  "orion": [
+    "Prospector",
+    "Mole"
+  ],
+  "pioneer": [
+    "Caterpillar",
+    "Nomad"
+  ],
+  "pitbull": [
+    "Aurora MR"
+  ],
+  "pulse (+ lx)": [
+    "Aurora MR"
+  ],
+  "railen": [
+    "Hercules C2",
+    "Syulen"
+  ],
+  "ranger cv": [
+    "Cyclone"
+  ],
+  "ranger rc": [
+    "Cyclone RC"
+  ],
+  "ranger tr": [
+    "Cyclone TR"
+  ],
+  "redeemer": [
+    "Arrow"
+  ],
+  "srv": [
+    "Aurora LN"
+  ],
+  "storm variants": [
+    "Aurora MR"
+  ],
+  "stv": [
+    "Aurora MR"
+  ],
+  "utv": [
+    "Aurora MR"
+  ],
+  "vulcan": [
+    "Starfarer"
+  ],
+  "x1 (+ velocity, force)": [
+    "Aurora MR"
+  ],
+  "zeus mk ii mr": [
+    "Zeus Mk II ES"
+  ]
+}
