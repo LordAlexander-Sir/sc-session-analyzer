@@ -1001,6 +1001,7 @@ body::after {
 .ship-card.career-support::before  { background: linear-gradient(90deg, var(--green), transparent); }
 .ship-card.career-other::before    { background: linear-gradient(90deg, var(--border2), transparent); }
 .ship-card.career-vehicle::before  { background: linear-gradient(90deg, #4b8ea8, transparent); }
+.ship-card.career-concept::before  { background: linear-gradient(90deg, var(--gold), transparent); }
 [data-theme="dark"] .ship-card:hover {
   border-color: var(--border2);
   box-shadow: 0 0 20px rgba(0,200,255,0.08);
@@ -1672,73 +1673,112 @@ function renderHangarPanel(handle, hangar) {
         if (!resp.ok) return;
         const raw = await resp.json();
         wikiData = raw.data;
-        if (!wikiData || wikiData.type !== 'ground') return;
+        if (!wikiData) return;
       } catch (_) { return; }
 
-      // Build vehicle stats (up to 6 boxes)
-      const drive   = wikiData.drive || {};
-      const shield  = wikiData.shield || {};
-      const armor   = wikiData.armor || {};
-      const maxSpd  = drive.max_speed_kph || 0;
-      const revSpd  = drive.reverse_speed_kph || 0;
-      const hull    = wikiData.health || 0;
-      const armrHp  = armor.health || 0;
-      const shldHp  = shield.hp || 0;
-      const cargo   = wikiData.cargo_capacity || 0;
-      const mfr     = (wikiData.manufacturer || {}).name || '';
-      const driveType = (drive.wheels || {}).drive_type || '';
+      const isGroundVehicle = wikiData.type === 'ground';
+      const isConcept       = wikiData.production_status === 'in-concept';
+      if (!isGroundVehicle && !isConcept) return;
 
-      const vstats = [];
-      if (maxSpd) vstats.push({ label:'Top Speed', val: maxSpd + ' km/h', cls:'cyan' });
-      if (revSpd) vstats.push({ label:'Reverse',   val: revSpd + ' km/h', cls:'' });
-      if (hull)   vstats.push({ label:'Hull HP',   val: fmtNum(hull),     cls:'green' });
-      if (armrHp) vstats.push({ label:'Armor HP',  val: fmtNum(armrHp),  cls:'' });
-      if (shldHp) vstats.push({ label:'Shield HP', val: fmtNum(shldHp),  cls:'purple' });
-      if (cargo)  vstats.push({ label:'Cargo',     val: cargo + ' SCU',  cls:'green' });
-
-      const statsHtml = vstats.slice(0,6).map(st =>
-        `<div class="ship-stat">
-          <span class="ship-stat-label">${st.label}</span>
-          <span class="ship-stat-val ${st.cls}">${st.val}</span>
-        </div>`
-      ).join('');
-
-      if (!statsHtml) return;
-
-      // Insert description + stats at top of card body (before paints)
+      const mfr  = (wikiData.manufacturer || {}).name || '';
+      const desc = wikiData.description || '';
       const body = cardEl.querySelector('.ship-card-body');
-      if (body) {
-        // Stats
-        const statsDiv = document.createElement('div');
-        statsDiv.className = 'ship-card-stats';
-        statsDiv.innerHTML = statsHtml;
-        body.insertBefore(statsDiv, body.firstChild);
 
-        // Description (lore text) — above stats, matching ship card layout
-        const desc = wikiData.description || '';
-        if (desc) {
-          const descDiv = document.createElement('div');
-          descDiv.className = 'ship-card-desc';
-          descDiv.textContent = desc;
-          body.insertBefore(descDiv, statsDiv);
-        }
-      }
-
-      // Add "Vehicle" badge and update manufacturer if wiki has a better name
-      const badgesEl = cardEl.querySelector('.ship-card-badges');
-      if (badgesEl) {
-        const badge = document.createElement('span');
-        badge.className = 'badge-career career-other';
-        badge.textContent = driveType ? `${driveType}` : 'Vehicle';
-        badgesEl.appendChild(badge);
-      }
+      // ── Update manufacturer if the card field is empty ────────────────────
       if (mfr) {
         const mfgEl = cardEl.querySelector('.ship-card-mfg');
         if (mfgEl && !mfgEl.textContent.trim()) mfgEl.textContent = mfr;
       }
 
-      // Apply vehicle top-bar color
-      cardEl.classList.add('career-vehicle');
+      if (isGroundVehicle) {
+        // ── Ground vehicle: speed / hull / shield stat boxes ─────────────────
+        const drive     = wikiData.drive || {};
+        const shield    = wikiData.shield || {};
+        const armor     = wikiData.armor || {};
+        const maxSpd    = drive.max_speed_kph || 0;
+        const revSpd    = drive.reverse_speed_kph || 0;
+        const hull      = wikiData.health || 0;
+        const armrHp    = armor.health || 0;
+        const shldHp    = shield.hp || 0;
+        const cargo     = wikiData.cargo_capacity || 0;
+        const driveType = (drive.wheels || {}).drive_type || '';
+
+        const vstats = [];
+        if (maxSpd) vstats.push({ label:'Top Speed', val: maxSpd + ' km/h', cls:'cyan' });
+        if (revSpd) vstats.push({ label:'Reverse',   val: revSpd + ' km/h', cls:'' });
+        if (hull)   vstats.push({ label:'Hull HP',   val: fmtNum(hull),     cls:'green' });
+        if (armrHp) vstats.push({ label:'Armor HP',  val: fmtNum(armrHp),  cls:'' });
+        if (shldHp) vstats.push({ label:'Shield HP', val: fmtNum(shldHp),  cls:'purple' });
+        if (cargo)  vstats.push({ label:'Cargo',     val: cargo + ' SCU',  cls:'green' });
+
+        const statsHtml = vstats.slice(0,6).map(st =>
+          `<div class="ship-stat">
+            <span class="ship-stat-label">${st.label}</span>
+            <span class="ship-stat-val ${st.cls}">${st.val}</span>
+          </div>`
+        ).join('');
+
+        if (statsHtml && body) {
+          const statsDiv = document.createElement('div');
+          statsDiv.className = 'ship-card-stats';
+          statsDiv.innerHTML = statsHtml;
+          body.insertBefore(statsDiv, body.firstChild);
+
+          if (desc) {
+            const descDiv = document.createElement('div');
+            descDiv.className = 'ship-card-desc';
+            descDiv.textContent = desc;
+            body.insertBefore(descDiv, statsDiv);
+          }
+        }
+
+        // Drive type badge + vehicle top bar
+        const badgesEl = cardEl.querySelector('.ship-card-badges');
+        if (badgesEl) {
+          const badge = document.createElement('span');
+          badge.className = 'badge-career career-other';
+          badge.textContent = driveType || 'Vehicle';
+          badgesEl.appendChild(badge);
+        }
+        cardEl.classList.add('career-vehicle');
+
+      } else {
+        // ── Concept pledge: description + loaner list, no stat boxes ─────────
+        const rawLoaners = wikiData.loaner || [];
+        const loaners = rawLoaners
+          .map(l => (typeof l === 'string' ? l : l.name || l.ship_name || ''))
+          .filter(Boolean);
+
+        if (body) {
+          // Loaner note
+          if (loaners.length) {
+            const loanerDiv = document.createElement('div');
+            loanerDiv.className = 'ship-card-desc';
+            loanerDiv.style.cssText = 'color:var(--gold);font-size:10px;margin-top:6px';
+            loanerDiv.textContent = `🛸 Loaners while you wait: ${loaners.join(' · ')}`;
+            body.insertBefore(loanerDiv, body.firstChild);
+          }
+
+          // Description
+          if (desc) {
+            const descDiv = document.createElement('div');
+            descDiv.className = 'ship-card-desc';
+            descDiv.textContent = desc;
+            body.insertBefore(descDiv, body.firstChild);
+          }
+        }
+
+        // "Concept" badge + gold top bar
+        const badgesEl = cardEl.querySelector('.ship-card-badges');
+        if (badgesEl) {
+          const badge = document.createElement('span');
+          badge.className = 'badge-career career-industrial';
+          badge.textContent = 'Concept';
+          badgesEl.appendChild(badge);
+        }
+        cardEl.classList.add('career-concept');
+      }
+
       cardEl.removeAttribute('data-needs-wiki');
     }));
   }
@@ -1861,7 +1901,8 @@ function renderHangarPanel(handle, hangar) {
     grid.appendChild(div);
   });
 
-  // Async-enrich any blank cards that might be ground vehicles
+  // Async-enrich any blank cards — ground vehicles get stat boxes,
+  // concept pledges get a description + loaner list
   enrichVehicleCards();
 
   // Close dropdowns on outside click
