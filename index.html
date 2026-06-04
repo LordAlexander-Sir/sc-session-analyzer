@@ -2549,7 +2549,10 @@ autoLoadShipCards();
       localStorage.setItem('sc-resets', JSON.stringify(data.resetSessions));
     }
 
-    if (sessions.length) renderDashboard(sessions);
+    // Show dashboard if we have sessions OR hangar data — don't require both
+    if (sessions.length || (data.version >= 2 && data.hangar)) {
+      renderDashboard(sessions);
+    }
 
   } catch (e) {
     console.warn('[analyzer] Could not parse extension handoff data:', e);
@@ -2610,7 +2613,10 @@ function processFiles(files) {
             localStorage.setItem('sc-resets', JSON.stringify(data.resetSessions));
           }
 
-          if (sessions.length) renderDashboard(sessions);
+          // Show dashboard if we have sessions OR hangar data — don't require both
+          if (sessions.length || (data.version >= 2 && data.hangar)) {
+            renderDashboard(sessions);
+          }
           loadedFromExport = true;
           return;
         }
