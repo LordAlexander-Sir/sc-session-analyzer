@@ -1800,7 +1800,19 @@ function renderHangarPanel(handle, hangar) {
         if (grid && loaners.length) {
           let insertAfter = cardEl;
           for (const loanerName of loaners) {
-            const lcard = shipCards?.[loanerName] || {};
+            // Direct lookup first, then fuzzy word-match fallback.
+            // Handles wiki/game name differences like "C2 Hercules" vs "Hercules C2".
+            let lcard = shipCards?.[loanerName];
+            let displayName = loanerName;
+            if (!lcard && shipCards) {
+              const words = loanerName.toLowerCase().split(/\s+/);
+              const match = Object.entries(shipCards).find(([k]) => {
+                const kl = k.toLowerCase();
+                return words.every(w => kl.includes(w));
+              });
+              if (match) { lcard = match[1]; displayName = match[0]; }
+            }
+            lcard = lcard || {};
             const hasData = !!(lcard.career || lcard.dps || lcard.scm_speed != null || lcard.shields != null);
             if (!hasData) continue;
 
@@ -1841,7 +1853,7 @@ function renderHangarPanel(handle, hangar) {
               <div class="ship-card-header">
                 ${lLogoHtml}
                 <div class="ship-card-titles">
-                  <div class="ship-card-name">${loanerName}</div>
+                  <div class="ship-card-name">${displayName}</div>
                   <div class="ship-card-mfg">${lMfgName}</div>
                 </div>
                 <div class="ship-card-badges">
