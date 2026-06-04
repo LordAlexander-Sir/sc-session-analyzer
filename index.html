@@ -61,7 +61,7 @@
   --purple: #9955ff;
   --purple-dim: rgba(153,85,255,0.1);
   --text: #7aa8c8;
-  --text-dim: #344e68;
+  --text-dim: #5e88a8;   /* lightened from #344e68 — readable on dark surfaces */
   --text-bright: #cce4ff;
   --shadow-sm: 0 1px 4px rgba(0,0,0,.5), 0 0 0 1px rgba(0,160,220,0.05);
   --shadow-md: 0 4px 24px rgba(0,0,0,.6), 0 0 0 1px rgba(0,160,220,0.07);
@@ -1760,7 +1760,7 @@ function renderHangarPanel(handle, hangar) {
         cardEl.classList.add('career-vehicle');
 
       } else {
-        // ── Concept pledge: description + loaner list, no stat boxes ─────────
+        // ── Concept pledge: description + loaner list + loaner stat cards ─────
         const rawLoaners = wikiData.loaner || [];
         const loaners = rawLoaners
           .map(l => (typeof l === 'string' ? l : l.name || l.ship_name || ''))
@@ -1794,6 +1794,73 @@ function renderHangarPanel(handle, hangar) {
           badgesEl.appendChild(badge);
         }
         cardEl.classList.add('career-concept');
+
+        // ── Inject loaner ship cards after the concept card ───────────────────
+        const grid = cardEl.closest('.ship-cards-grid');
+        if (grid && loaners.length) {
+          let insertAfter = cardEl;
+          for (const loanerName of loaners) {
+            const lcard = shipCards?.[loanerName] || {};
+            const hasData = !!(lcard.career || lcard.dps || lcard.scm_speed != null || lcard.shields != null);
+            if (!hasData) continue;
+
+            const lcareer   = lcard.career || '';
+            const lClass    = careerClass(lcareer);
+            const lLogoUrl  = mfgLogoUrl(lcard.manufacturer || '');
+            const lMfgName  = mfgDisplayName(lcard.manufacturer || '');
+
+            // Stat boxes — same logic as main ships.forEach
+            const lstats = [];
+            if (lcard.cargo_scu !== null && lcard.cargo_scu !== undefined)
+              lstats.push({ label:'Cargo', val: lcard.cargo_scu > 0 ? lcard.cargo_scu+' SCU' : '—', cls: lcard.cargo_scu > 0 ? 'green' : '' });
+            if (lcard.scm_speed)
+              lstats.push({ label:'SCM', val: lcard.scm_speed+' m/s', cls:'cyan' });
+            if (lcard.dps)
+              lstats.push({ label:'DPS', val: fmtNum(lcard.dps), cls:'red' });
+            if (lcard.shields !== null && lcard.shields !== undefined)
+              lstats.push({ label:'Shield HP', val: fmtNum(lcard.shields), cls:'purple' });
+            if (lcard.qt_range !== null && lcard.qt_range !== undefined)
+              lstats.push({ label:'QT Range', val: lcard.qt_range > 0 ? lcard.qt_range+' Gm' : '—', cls:'cyan' });
+            if (lcard.armor_phys !== null && lcard.armor_phys !== undefined)
+              lstats.push({ label:'Armor Def', val: `${lcard.armor_phys}P / ${lcard.armor_energy ?? '?'}E`, cls:'' });
+
+            const lstatsHtml = lstats.slice(0,6).map(st =>
+              `<div class="ship-stat">
+                <span class="ship-stat-label">${st.label}</span>
+                <span class="ship-stat-val ${st.cls}">${st.val}</span>
+              </div>`
+            ).join('');
+
+            const ldescHtml  = lcard.description ? `<div class="ship-card-desc">${lcard.description}</div>` : '';
+            const lLogoHtml  = lLogoUrl ? `<img class="ship-card-logo" src="${lLogoUrl}" alt="${lMfgName}" onerror="this.style.display='none'">` : '';
+            const lerkulHtml = lcard.erkul_url ? `<a class="ship-erkul-link" href="${lcard.erkul_url}" target="_blank" rel="noopener">Loadout ↗</a>` : '';
+
+            const ldiv = document.createElement('div');
+            ldiv.className = `ship-card career-${lClass}`;
+            ldiv.innerHTML = `
+              <div class="ship-card-header">
+                ${lLogoHtml}
+                <div class="ship-card-titles">
+                  <div class="ship-card-name">${loanerName}</div>
+                  <div class="ship-card-mfg">${lMfgName}</div>
+                </div>
+                <div class="ship-card-badges">
+                  <span class="badge-career career-industrial" style="background:rgba(180,130,0,.15);border-color:rgba(200,160,0,.35)">🛸 Loaner</span>
+                  ${lcareer ? `<span class="badge-career ${lClass}">${lcareer}</span>` : ''}
+                </div>
+              </div>
+              <div class="ship-card-body">
+                <div class="ship-card-desc" style="color:var(--gold);font-size:10px">Loaner for: ${name}</div>
+                ${ldescHtml}
+                ${lstatsHtml ? `<div class="ship-card-stats">${lstatsHtml}</div>` : ''}
+                <div><span class="ship-no-paints">Loaner ship</span></div>
+              </div>
+              <div class="ship-card-footer"><span></span>${lerkulHtml}</div>`;
+
+            insertAfter.insertAdjacentElement('afterend', ldiv);
+            insertAfter = ldiv;
+          }
+        }
       }
 
       cardEl.removeAttribute('data-needs-wiki');
