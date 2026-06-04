@@ -1705,13 +1705,23 @@ function renderHangarPanel(handle, hangar) {
 
       if (!statsHtml) return;
 
-      // Insert stats at top of card body (before paints)
+      // Insert description + stats at top of card body (before paints)
       const body = cardEl.querySelector('.ship-card-body');
       if (body) {
+        // Stats
         const statsDiv = document.createElement('div');
         statsDiv.className = 'ship-card-stats';
         statsDiv.innerHTML = statsHtml;
         body.insertBefore(statsDiv, body.firstChild);
+
+        // Description (lore text) — above stats, matching ship card layout
+        const desc = wikiData.description || '';
+        if (desc) {
+          const descDiv = document.createElement('div');
+          descDiv.className = 'ship-card-desc';
+          descDiv.textContent = desc;
+          body.insertBefore(descDiv, statsDiv);
+        }
       }
 
       // Add "Vehicle" badge and update manufacturer if wiki has a better name
