@@ -1680,14 +1680,31 @@ function renderHangarPanel(handle, hangar) {
       const isConcept       = wikiData.production_status === 'in-concept';
       if (!isGroundVehicle && !isConcept) return;
 
-      const mfr  = (wikiData.manufacturer || {}).name || '';
-      const desc = wikiData.description || '';
-      const body = cardEl.querySelector('.ship-card-body');
+      const mfrObj = wikiData.manufacturer || {};
+      const mfr    = mfrObj.name || '';
+      const mfrCode = mfrObj.code || '';
+      const desc   = wikiData.description || '';
+      const body   = cardEl.querySelector('.ship-card-body');
 
-      // ── Update manufacturer if the card field is empty ────────────────────
+      // ── Update manufacturer name if the card field is empty ───────────────
       if (mfr) {
         const mfgEl = cardEl.querySelector('.ship-card-mfg');
         if (mfgEl && !mfgEl.textContent.trim()) mfgEl.textContent = mfr;
+      }
+
+      // ── Inject manufacturer logo if available and not already present ─────
+      const logoSrc = mfrCode && MFG_LOGOS[mfrCode] ? MFG_LOGOS[mfrCode] : null;
+      if (logoSrc && !cardEl.querySelector('.ship-card-logo')) {
+        const header = cardEl.querySelector('.ship-card-header');
+        const titles = cardEl.querySelector('.ship-card-titles');
+        if (header && titles) {
+          const img = document.createElement('img');
+          img.className = 'ship-card-logo';
+          img.src       = logoSrc;
+          img.alt       = mfr;
+          img.onerror   = function() { this.style.display = 'none'; };
+          header.insertBefore(img, titles);
+        }
       }
 
       if (isGroundVehicle) {
