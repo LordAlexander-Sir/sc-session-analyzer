@@ -2395,11 +2395,26 @@ function buildShipCardIndex(data) {
 
 function findShipCard(shipName) {
   if (!shipCards) return {};
-  if (shipCards[shipName]) return shipCards[shipName];          // exact match
+  // 1. Exact match
+  if (shipCards[shipName]) return shipCards[shipName];
   if (!_shipCardWordIndex) buildShipCardIndex(shipCards);
+  // 2. Word-set match — same words, different order
+  //    "Hercules Starlifter M2" → "M2 Hercules Starlifter"
   const normalized = shipName.toLowerCase().split(/\s+/).sort().join(' ');
   const canonKey = _shipCardWordIndex[normalized];
-  return canonKey ? shipCards[canonKey] : {};                   // word-set match or empty
+  if (canonKey) return shipCards[canonKey];
+  // 3. Subset match — hangar uses shorter name, erkul adds a suffix
+  //    "C8R Pisces" → "C8R Pisces Rescue"
+  //    Only for multi-word names, only when exactly one key matches
+  const hangarWords = shipName.toLowerCase().split(/\s+/).filter(w => w.length > 1);
+  if (hangarWords.length >= 2) {
+    const hits = Object.keys(shipCards).filter(key => {
+      const keyWords = key.toLowerCase().split(/\s+/);
+      return hangarWords.every(w => keyWords.includes(w));
+    });
+    if (hits.length === 1) return shipCards[hits[0]];
+  }
+  return {};
 }
 
 // ── Extension handoff — reads data injected via URL hash by the Chrome ext ────
