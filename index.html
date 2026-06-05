@@ -97,11 +97,17 @@ body {
 }
 
 /* ── THEME TOGGLE ── */
-.theme-toggle {
+/* Header button group (theme toggle + help) */
+.header-btns {
   position: absolute;
   top: 20px;
   right: 24px;
   z-index: 20;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.theme-toggle {
   background: rgba(5,12,24,0.55);
   border: 1px solid var(--border2);
   color: var(--text-bright);
@@ -115,6 +121,29 @@ body {
   box-shadow: var(--shadow-sm);
 }
 .theme-toggle:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  box-shadow: var(--cyan-glow);
+}
+.help-btn {
+  background: rgba(5,12,24,0.55);
+  border: 1px solid var(--border2);
+  color: var(--text-bright);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  padding: 6px 14px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all .2s;
+  line-height: 1;
+  backdrop-filter: blur(8px);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.help-btn:hover {
   border-color: var(--cyan);
   color: var(--cyan);
   box-shadow: var(--cyan-glow);
@@ -1252,7 +1281,10 @@ body::after {
        src="./assets/logos/MadeByTheCommunity_White.png"
        alt="Made by the Community"
        onerror="this.style.display='none'">
-  <button class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode">☀</button>
+  <div class="header-btns">
+    <a class="help-btn" href="./help.html" target="_blank" rel="noopener" title="Help &amp; Troubleshooting">? Help</a>
+    <button class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode">☀</button>
+  </div>
 </header>
 
 <div class="privacy-bar">
