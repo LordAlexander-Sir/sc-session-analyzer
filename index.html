@@ -61,7 +61,7 @@
   --purple: #9955ff;
   --purple-dim: rgba(153,85,255,0.1);
   --text: #7aa8c8;
-  --text-dim: #5e88a8;   /* lightened from #344e68 — readable on dark surfaces */
+  --text-dim: #344e68;
   --text-bright: #cce4ff;
   --shadow-sm: 0 1px 4px rgba(0,0,0,.5), 0 0 0 1px rgba(0,160,220,0.05);
   --shadow-md: 0 4px 24px rgba(0,0,0,.6), 0 0 0 1px rgba(0,160,220,0.07);
@@ -118,32 +118,6 @@ body {
   border-color: var(--cyan);
   color: var(--cyan);
   box-shadow: var(--cyan-glow);
-}
-
-/* ── HELP LINK (header) ── */
-.help-toggle {
-  position: absolute;
-  top: 20px;
-  right: 80px;   /* sits just left of the theme toggle */
-  z-index: 20;
-  background: rgba(5,12,24,0.55);
-  border: 1px solid var(--border2);
-  color: var(--text-dim);
-  font-size: 13px;
-  padding: 6px 12px;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all .2s;
-  line-height: 1;
-  backdrop-filter: blur(8px);
-  box-shadow: var(--shadow-sm);
-  text-decoration: none;
-}
-.help-toggle:hover {
-  border-color: var(--cyan);
-  color: var(--cyan);
-  box-shadow: var(--cyan-glow);
-  text-decoration: none;
 }
 
 /* ── HEADER ── */
@@ -1000,8 +974,6 @@ body::after {
 .ship-card.career-exploration::before { background: linear-gradient(90deg, var(--purple), transparent); }
 .ship-card.career-support::before  { background: linear-gradient(90deg, var(--green), transparent); }
 .ship-card.career-other::before    { background: linear-gradient(90deg, var(--border2), transparent); }
-.ship-card.career-vehicle::before  { background: linear-gradient(90deg, #4b8ea8, transparent); }
-.ship-card.career-concept::before  { background: linear-gradient(90deg, var(--gold), transparent); }
 [data-theme="dark"] .ship-card:hover {
   border-color: var(--border2);
   box-shadow: 0 0 20px rgba(0,200,255,0.08);
@@ -1280,7 +1252,6 @@ body::after {
        src="./assets/logos/MadeByTheCommunity_White.png"
        alt="Made by the Community"
        onerror="this.style.display='none'">
-  <a class="help-toggle" href="help.html" target="_blank" rel="noopener" title="Help & Troubleshooting">❓ Help</a>
   <button class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode">☀</button>
 </header>
 
@@ -1332,12 +1303,6 @@ body::after {
   <div class="tut-or">— or —</div>
   <button class="btn" onclick="document.getElementById('file-input').click()">Browse Files</button>
   <input type="file" id="file-input" accept=".log,.json" multiple>
-  <div style="margin-top:14px;text-align:center">
-    <a href="help.html" target="_blank" rel="noopener"
-       style="font-size:11px;color:var(--text-dim);text-decoration:none;letter-spacing:.04em">
-      ❓ Setup guide &amp; troubleshooting
-    </a>
-  </div>
 </div>
 
 <div id="dashboard">
@@ -1581,7 +1546,6 @@ body::after {
       All Star Citizen assets, logos, and imagery are property of Cloud Imperium Games Corporation &amp; Roberts Space Industries Corp.
       Star Citizen®, Squadron 42®, Roberts Space Industries®, and Cloud Imperium® are registered trademarks of Cloud Imperium Rights LLC.
       Used under the <a href="https://robertsspaceindustries.com/fan-sites" target="_blank" rel="noopener">RSI Fan Site Policy</a>.
-      &nbsp;·&nbsp; <a href="help.html" target="_blank" rel="noopener">Help &amp; Troubleshooting</a>
     </div>
     <div class="footer-right">
       <img class="footer-mbc"
@@ -1596,6 +1560,27 @@ body::after {
 <div id="tooltip"></div>
 
 <script>
+// ── Security: escape untrusted strings before they go into innerHTML ──────────
+// Session/hangar data can be authored by other people (shared exports, the
+// #ext= URL handoff), so handles, ship/blueprint/mission/party names etc. are
+// untrusted. Always run them through esc() before interpolating into HTML.
+function esc(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
+// Parse a localStorage JSON value defensively — corrupt/tampered data must not
+// throw during module init and blank out the whole app.
+function lsJSON(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw == null ? fallback : JSON.parse(raw);
+  } catch (_) {
+    return fallback;
+  }
+}
+
 // ── Session export / share ──
 // ── Hangar Panel (v2 bot export) ──────────────────────────────────────────────
 function renderHangarPanel(handle, hangar) {
@@ -1655,243 +1640,6 @@ function renderHangarPanel(handle, hangar) {
     return String(n);
   }
 
-  // ── Ground vehicle enrichment ─────────────────────────────────────────────
-  // Cards with no ship_cards.json entry get data-needs-wiki set.
-  // This runs after the forEach, fetches SC Wiki data in parallel, and
-  // fills in speed / hull / shield / cargo stats for ground vehicles.
-  async function enrichVehicleCards() {
-    const blanks = [...document.querySelectorAll('[data-needs-wiki]')];
-    if (!blanks.length) return;
-
-    await Promise.all(blanks.map(async cardEl => {
-      const name = cardEl.dataset.needsWiki;
-      let wikiData;
-      try {
-        const resp = await fetch(
-          `https://api.star-citizen.wiki/api/v2/vehicles/${encodeURIComponent(name)}?locale=en_EN`
-        );
-        if (!resp.ok) return;
-        const raw = await resp.json();
-        wikiData = raw.data;
-        if (!wikiData) return;
-      } catch (_) { return; }
-
-      const isGroundVehicle = wikiData.type === 'ground';
-      const isConcept       = wikiData.production_status === 'in-concept';
-      if (!isGroundVehicle && !isConcept) return;
-
-      const mfrObj = wikiData.manufacturer || {};
-      const mfr    = mfrObj.name || '';
-      const mfrCode = mfrObj.code || '';
-      const desc   = wikiData.description || '';
-      const body   = cardEl.querySelector('.ship-card-body');
-
-      // ── Update manufacturer name if the card field is empty ───────────────
-      if (mfr) {
-        const mfgEl = cardEl.querySelector('.ship-card-mfg');
-        if (mfgEl && !mfgEl.textContent.trim()) mfgEl.textContent = mfr;
-      }
-
-      // ── Inject manufacturer logo if available and not already present ─────
-      const logoSrc = mfrCode && MFG_LOGOS[mfrCode] ? MFG_LOGOS[mfrCode] : null;
-      if (logoSrc && !cardEl.querySelector('.ship-card-logo')) {
-        const header = cardEl.querySelector('.ship-card-header');
-        const titles = cardEl.querySelector('.ship-card-titles');
-        if (header && titles) {
-          const img = document.createElement('img');
-          img.className = 'ship-card-logo';
-          img.src       = logoSrc;
-          img.alt       = mfr;
-          img.onerror   = function() { this.style.display = 'none'; };
-          header.insertBefore(img, titles);
-        }
-      }
-
-      if (isGroundVehicle) {
-        // ── Ground vehicle: speed / hull / shield stat boxes ─────────────────
-        const drive     = wikiData.drive || {};
-        const shield    = wikiData.shield || {};
-        const armor     = wikiData.armor || {};
-        const maxSpd    = drive.max_speed_kph || 0;
-        const revSpd    = drive.reverse_speed_kph || 0;
-        const hull      = wikiData.health || 0;
-        const armrHp    = armor.health || 0;
-        const shldHp    = shield.hp || 0;
-        const cargo     = wikiData.cargo_capacity || 0;
-        const driveType = (drive.wheels || {}).drive_type || '';
-
-        const vstats = [];
-        if (maxSpd) vstats.push({ label:'Top Speed', val: maxSpd + ' km/h', cls:'cyan' });
-        if (revSpd) vstats.push({ label:'Reverse',   val: revSpd + ' km/h', cls:'' });
-        if (hull)   vstats.push({ label:'Hull HP',   val: fmtNum(hull),     cls:'green' });
-        if (armrHp) vstats.push({ label:'Armor HP',  val: fmtNum(armrHp),  cls:'' });
-        if (shldHp) vstats.push({ label:'Shield HP', val: fmtNum(shldHp),  cls:'purple' });
-        if (cargo)  vstats.push({ label:'Cargo',     val: cargo + ' SCU',  cls:'green' });
-
-        const statsHtml = vstats.slice(0,6).map(st =>
-          `<div class="ship-stat">
-            <span class="ship-stat-label">${st.label}</span>
-            <span class="ship-stat-val ${st.cls}">${st.val}</span>
-          </div>`
-        ).join('');
-
-        if (statsHtml && body) {
-          const statsDiv = document.createElement('div');
-          statsDiv.className = 'ship-card-stats';
-          statsDiv.innerHTML = statsHtml;
-          body.insertBefore(statsDiv, body.firstChild);
-
-          if (desc) {
-            const descDiv = document.createElement('div');
-            descDiv.className = 'ship-card-desc';
-            descDiv.textContent = desc;
-            body.insertBefore(descDiv, statsDiv);
-          }
-        }
-
-        // Drive type badge + vehicle top bar
-        const badgesEl = cardEl.querySelector('.ship-card-badges');
-        if (badgesEl) {
-          const badge = document.createElement('span');
-          badge.className = 'badge-career career-other';
-          badge.textContent = driveType || 'Vehicle';
-          badgesEl.appendChild(badge);
-        }
-        cardEl.classList.add('career-vehicle');
-
-      } else {
-        // ── Concept pledge: description + loaner list + loaner stat cards ─────
-        // Use official CIG loaner matrix first; fall back to wiki API data
-        const loaners = (() => {
-          if (loanerMatrix) {
-            const lower = name.toLowerCase();
-            // Direct key match, then partial match (handles "carrack / carrack expedition" style keys)
-            const direct = loanerMatrix[lower];
-            if (direct) return direct;
-            const partial = Object.entries(loanerMatrix).find(([k]) =>
-              k.split(/[\/,]/).some(part => part.trim() === lower)
-            );
-            if (partial) return partial[1];
-          }
-          // Fallback to wiki API loaner field
-          return (wikiData.loaner || [])
-            .map(l => (typeof l === 'string' ? l : l.name || l.ship_name || ''))
-            .filter(Boolean);
-        })();
-
-        if (body) {
-          // Loaner note
-          if (loaners.length) {
-            const loanerDiv = document.createElement('div');
-            loanerDiv.className = 'ship-card-desc';
-            loanerDiv.style.cssText = 'color:var(--gold);font-size:10px;margin-top:6px';
-            loanerDiv.textContent = `🛸 Loaners while you wait: ${loaners.join(' · ')}`;
-            body.insertBefore(loanerDiv, body.firstChild);
-          }
-
-          // Description
-          if (desc) {
-            const descDiv = document.createElement('div');
-            descDiv.className = 'ship-card-desc';
-            descDiv.textContent = desc;
-            body.insertBefore(descDiv, body.firstChild);
-          }
-        }
-
-        // "Concept" badge + gold top bar
-        const badgesEl = cardEl.querySelector('.ship-card-badges');
-        if (badgesEl) {
-          const badge = document.createElement('span');
-          badge.className = 'badge-career career-industrial';
-          badge.textContent = 'Concept';
-          badgesEl.appendChild(badge);
-        }
-        cardEl.classList.add('career-concept');
-
-        // ── Inject loaner ship cards after the concept card ───────────────────
-        const grid = cardEl.closest('.ship-cards-grid');
-        if (grid && loaners.length) {
-          let insertAfter = cardEl;
-          for (const loanerName of loaners) {
-            // Direct lookup first, then fuzzy word-match fallback.
-            // Handles wiki/game name differences like "C2 Hercules" vs "Hercules C2".
-            let lcard = shipCards?.[loanerName];
-            let displayName = loanerName;
-            if (!lcard && shipCards) {
-              const words = loanerName.toLowerCase().split(/\s+/);
-              const match = Object.entries(shipCards).find(([k]) => {
-                const kl = k.toLowerCase();
-                return words.every(w => kl.includes(w));
-              });
-              if (match) { lcard = match[1]; displayName = match[0]; }
-            }
-            lcard = lcard || {};
-            const hasData = !!(lcard.career || lcard.dps || lcard.scm_speed != null || lcard.shields != null);
-            if (!hasData) continue;
-
-            const lcareer   = lcard.career || '';
-            const lClass    = careerClass(lcareer);
-            const lLogoUrl  = mfgLogoUrl(lcard.manufacturer || '');
-            const lMfgName  = mfgDisplayName(lcard.manufacturer || '');
-
-            // Stat boxes — same logic as main ships.forEach
-            const lstats = [];
-            if (lcard.cargo_scu !== null && lcard.cargo_scu !== undefined)
-              lstats.push({ label:'Cargo', val: lcard.cargo_scu > 0 ? lcard.cargo_scu+' SCU' : '—', cls: lcard.cargo_scu > 0 ? 'green' : '' });
-            if (lcard.scm_speed)
-              lstats.push({ label:'SCM', val: lcard.scm_speed+' m/s', cls:'cyan' });
-            if (lcard.dps)
-              lstats.push({ label:'DPS', val: fmtNum(lcard.dps), cls:'red' });
-            if (lcard.shields !== null && lcard.shields !== undefined)
-              lstats.push({ label:'Shield HP', val: fmtNum(lcard.shields), cls:'purple' });
-            if (lcard.qt_range !== null && lcard.qt_range !== undefined)
-              lstats.push({ label:'QT Range', val: lcard.qt_range > 0 ? lcard.qt_range+' Gm' : '—', cls:'cyan' });
-            if (lcard.armor_phys !== null && lcard.armor_phys !== undefined)
-              lstats.push({ label:'Armor Def', val: `${lcard.armor_phys}P / ${lcard.armor_energy ?? '?'}E`, cls:'' });
-
-            const lstatsHtml = lstats.slice(0,6).map(st =>
-              `<div class="ship-stat">
-                <span class="ship-stat-label">${st.label}</span>
-                <span class="ship-stat-val ${st.cls}">${st.val}</span>
-              </div>`
-            ).join('');
-
-            const ldescHtml  = lcard.description ? `<div class="ship-card-desc">${lcard.description}</div>` : '';
-            const lLogoHtml  = lLogoUrl ? `<img class="ship-card-logo" src="${lLogoUrl}" alt="${lMfgName}" onerror="this.style.display='none'">` : '';
-            const lerkulHtml = lcard.erkul_url ? `<a class="ship-erkul-link" href="${lcard.erkul_url}" target="_blank" rel="noopener">Loadout ↗</a>` : '';
-
-            const ldiv = document.createElement('div');
-            ldiv.className = `ship-card career-${lClass}`;
-            ldiv.innerHTML = `
-              <div class="ship-card-header">
-                ${lLogoHtml}
-                <div class="ship-card-titles">
-                  <div class="ship-card-name">${displayName}</div>
-                  <div class="ship-card-mfg">${lMfgName}</div>
-                </div>
-                <div class="ship-card-badges">
-                  <span class="badge-career career-industrial" style="background:rgba(180,130,0,.15);border-color:rgba(200,160,0,.35)">🛸 Loaner</span>
-                  ${lcareer ? `<span class="badge-career ${lClass}">${lcareer}</span>` : ''}
-                </div>
-              </div>
-              <div class="ship-card-body">
-                <div class="ship-card-desc" style="color:var(--gold);font-size:10px">Loaner for: ${name}</div>
-                ${ldescHtml}
-                ${lstatsHtml ? `<div class="ship-card-stats">${lstatsHtml}</div>` : ''}
-                <div><span class="ship-no-paints">Loaner ship</span></div>
-              </div>
-              <div class="ship-card-footer"><span></span>${lerkulHtml}</div>`;
-
-            insertAfter.insertAdjacentElement('afterend', ldiv);
-            insertAfter = ldiv;
-          }
-        }
-      }
-
-      cardEl.removeAttribute('data-needs-wiki');
-    }));
-  }
-
   // ── Render ship cards ──────────────────────────────────────────────────────
   document.getElementById('hangar-ships-count').textContent = ships.length;
   const hasCards = !!shipCards;
@@ -1901,18 +1649,16 @@ function renderHangarPanel(handle, hangar) {
   grid.innerHTML = '';
 
   ships.forEach(s => {
-    const card = shipCards?.[s.name] || {};
+    const card = findShipCard(s.name);
     const logoUrl  = mfgLogoUrl(s.manufacturer);
     const mfgName  = mfgDisplayName(s.manufacturer);
     const career   = card.career || '';
     const cClass   = careerClass(career);
-    // Detect whether this card has any Erkul data
-    const hasCardData = !!(card.career || card.dps || card.scm_speed != null || card.shields != null);
     const myPaints = shipPaints[s.name] || [];
 
     // Card header
     const logoHtml = logoUrl
-      ? `<img class="ship-card-logo" src="${logoUrl}" alt="${mfgName}" onerror="this.style.display='none'">`
+      ? `<img class="ship-card-logo" src="${logoUrl}" alt="${esc(mfgName)}" onerror="this.style.display='none'">`
       : '';
 
     const ltiHtml = s.lti
@@ -1978,8 +1724,8 @@ function renderHangarPanel(handle, hangar) {
       <div class="ship-card-header">
         ${logoHtml}
         <div class="ship-card-titles">
-          <div class="ship-card-name">${s.name}</div>
-          <div class="ship-card-mfg">${mfgName}</div>
+          <div class="ship-card-name">${esc(s.name)}</div>
+          <div class="ship-card-mfg">${esc(mfgName)}</div>
         </div>
         <div class="ship-card-badges">${ltiHtml}${careerHtml}</div>
       </div>
@@ -2004,15 +1750,8 @@ function renderHangarPanel(handle, hangar) {
       });
     }
 
-    // Tag cards with no Erkul data — enrichVehicleCards() will fill these in from the wiki
-    if (!hasCardData) div.dataset.needsWiki = s.name;
-
     grid.appendChild(div);
   });
-
-  // Async-enrich any blank cards — ground vehicles get stat boxes,
-  // concept pledges get a description + loaner list
-  enrichVehicleCards();
 
   // Close dropdowns on outside click
   document.addEventListener('click', () => {
@@ -2040,12 +1779,12 @@ function renderHangarPanel(handle, hangar) {
     Object.entries(byMfg).sort((a,b) => a[0].localeCompare(b[0])).forEach(([code, group]) => {
       const logoUrl = MFG_LOGOS[code] || null;
       const logoHtml = logoUrl
-        ? `<img class="other-paints-mfg-logo" src="${logoUrl}" alt="${code}" onerror="this.style.display='none'">`
+        ? `<img class="other-paints-mfg-logo" src="${logoUrl}" alt="${esc(code)}" onerror="this.style.display='none'">`
         : '';
       const name = mfgDisplayName(group.mfg) || code;
 
       const rows = group.paints.map(p =>
-        `<div class="other-paint-row">${p.ship ? `<strong>${p.ship}</strong> — ` : ''}${p.display}</div>`
+        `<div class="other-paint-row">${p.ship ? `<strong>${esc(p.ship)}</strong> — ` : ''}${esc(p.display)}</div>`
       ).join('');
 
       const div = document.createElement('div');
@@ -2053,7 +1792,7 @@ function renderHangarPanel(handle, hangar) {
       div.innerHTML = `
         <div class="other-paints-mfg-header">
           ${logoHtml}
-          <span class="other-paints-mfg-name">${name}</span>
+          <span class="other-paints-mfg-name">${esc(name)}</span>
           <span style="margin-left:auto;font-size:10px;color:var(--text-dim);font-family:'Consolas',monospace">${group.paints.length}</span>
         </div>
         ${rows}`;
@@ -2067,7 +1806,7 @@ function renderHangarPanel(handle, hangar) {
   const paintsList = document.getElementById('hangar-paints-list');
   document.getElementById('hangar-paints-count').textContent = paints.length;
   paintsList.innerHTML = paints.map(p =>
-    `<li style="padding:3px 0;border-bottom:1px solid var(--border);font-size:12px">🎨 ${p.name}</li>`
+    `<li style="padding:3px 0;border-bottom:1px solid var(--border);font-size:12px">🎨 ${esc(p.name)}</li>`
   ).join('');
 
   // Unreleased pledges
@@ -2075,8 +1814,8 @@ function renderHangarPanel(handle, hangar) {
   document.getElementById('hangar-pledges-count').textContent = pledges.length;
   pledgesList.innerHTML = pledges.length
     ? pledges.map(p => {
-        const loaner = p.loaner_ship ? ` <span style="color:var(--text-dim);font-size:10px">→ ${p.loaner_ship}</span>` : '';
-        return `<li style="padding:3px 0;border-bottom:1px solid var(--border);font-size:12px">📋 ${p.name}${loaner}</li>`;
+        const loaner = p.loaner_ship ? ` <span style="color:var(--text-dim);font-size:10px">→ ${esc(p.loaner_ship)}</span>` : '';
+        return `<li style="padding:3px 0;border-bottom:1px solid var(--border);font-size:12px">📋 ${esc(p.name)}${loaner}</li>`;
       }).join('')
     : '<li style="color:var(--text-dim);font-size:11px;padding:6px 0">No unreleased pledges</li>';
 
@@ -2084,7 +1823,7 @@ function renderHangarPanel(handle, hangar) {
   const bpList = document.getElementById('hangar-bp-list');
   document.getElementById('hangar-bp-count').textContent = bps.length;
   bpList.innerHTML = bps.map(b =>
-    `<li style="padding:2px 0;font-size:11px;color:var(--text-dim)">• ${b}</li>`
+    `<li style="padding:2px 0;font-size:11px;color:var(--text-dim)">• ${esc(b)}</li>`
   ).join('');
 
   console.log(`[analyzer] Hangar panel: ${ships.length} ships, ${paints.length} paints, ${bps.length} blueprints, ${pledges.length} pledges`);
@@ -2141,20 +1880,6 @@ dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classL
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
 dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); processFiles([...e.dataTransfer.files]); });
 fileInput.addEventListener('change', e => processFiles([...e.target.files]));
-
-// ── Extension bridge ──────────────────────────────────────────────────────────
-// The SC Hangar Exporter extension calls window.scExtensionLoad(jsonStr) to
-// push data directly without relying on drag-and-drop simulation (which is
-// blocked in some browsers even with shields/blockers disabled).
-window.scExtensionLoad = function(jsonStr) {
-  try {
-    const blob = new Blob([jsonStr], { type: 'application/json' });
-    const file = new File([blob], 'sc-extension-export.json', { type: 'application/json' });
-    processFiles([file]);
-  } catch (e) {
-    console.error('[analyzer] scExtensionLoad failed:', e);
-  }
-};
 document.getElementById('reset-btn').addEventListener('click', () => {
   dashboard.style.display = 'none';
   dropZone.style.display  = 'block';
@@ -2208,7 +1933,7 @@ const MFG_LOGOS = {
   'XIAN': L+'Aopoa_Logo_Main_Light.png',
   'GAMA': L+'Gatac_Logo_Main_Light.png',
   'MRAI': L+'MISC_Mirai_Logo_IconMark_4k.png',
-  'GRIN': L+'GREYCAT_INDUSTRIAL.webp',
+  'GRIN': null,  // Greycat — not in fan kit
 };
 
 // Extract manufacturer code from "(CODE)" string
@@ -2325,7 +2050,8 @@ function snapMemGB(rawGB) {
 }
 
 // ── Reset markers (persisted in localStorage) ──
-let resetSessions = new Set(JSON.parse(localStorage.getItem('sc-resets') || '[]'));
+const _savedResets = lsJSON('sc-resets', []);
+let resetSessions = new Set(Array.isArray(_savedResets) ? _savedResets : []);
 function toggleReset(filename) {
   if (resetSessions.has(filename)) resetSessions.delete(filename);
   else resetSessions.add(filename);
@@ -2360,7 +2086,7 @@ function extractShip(v) {
 const WIKI_MISSIONS_API = 'https://api.star-citizen.wiki/api/missions';
 const WIKI_HEADERS = { 'Accept': 'application/json', 'Accept-Language': 'en_EN' };
 const SCRIP_CACHE_KEY = 'sc-scrip-cache';
-let scripCache = JSON.parse(localStorage.getItem(SCRIP_CACHE_KEY) || '{}');
+let scripCache = lsJSON(SCRIP_CACHE_KEY, {}) || {};
 
 function classifyScrip(mission) {
   if (!mission) return 'other';
@@ -2622,7 +2348,6 @@ function parseLog(text, filename) {
 
 let missionPools = null;   // loaded from mission_pools.json
 let shipCards    = null;   // loaded from ship_cards.json
-let loanerMatrix = null;   // loaded from loaner_matrix.json (official CIG loaner assignments)
 let allSessions  = [];
 let rerenderFn   = () => {};
 
@@ -2642,20 +2367,6 @@ async function autoLoadMissionPools() {
 }
 autoLoadMissionPools();
 
-// Auto-fetch loaner_matrix.json — official CIG loaner ship assignments
-async function autoLoadLoanerMatrix() {
-  try {
-    const resp = await fetch('./loaner_matrix.json');
-    if (!resp.ok) return;
-    const data = await resp.json();
-    if (typeof data === 'object' && data !== null) {
-      loanerMatrix = data;
-      console.log(`[analyzer] Auto-loaded loaner_matrix.json — ${Object.keys(data).length} entries`);
-    }
-  } catch (_) {}
-}
-autoLoadLoanerMatrix();
-
 // Auto-fetch ship_cards.json when served from a web server
 async function autoLoadShipCards() {
   try {
@@ -2664,11 +2375,32 @@ async function autoLoadShipCards() {
     const data = await resp.json();
     if (typeof data === 'object' && data !== null) {
       shipCards = data;
+      buildShipCardIndex(data);
       console.log(`[analyzer] Auto-loaded ship_cards.json — ${Object.keys(data).length} ships`);
     }
-  } catch (_) { /* silently ignore — user can drag-drop the file manually */ }
+  } catch (_) { /* silently ignore */ }
 }
 autoLoadShipCards();
+
+// Word-set index for fuzzy name matching
+// e.g. "Hercules Starlifter M2" (hangar export) finds "M2 Hercules Starlifter" (erkul key)
+let _shipCardWordIndex = null;
+function buildShipCardIndex(data) {
+  _shipCardWordIndex = {};
+  Object.keys(data).forEach(key => {
+    const normalized = key.toLowerCase().split(/\s+/).sort().join(' ');
+    _shipCardWordIndex[normalized] = key;
+  });
+}
+
+function findShipCard(shipName) {
+  if (!shipCards) return {};
+  if (shipCards[shipName]) return shipCards[shipName];          // exact match
+  if (!_shipCardWordIndex) buildShipCardIndex(shipCards);
+  const normalized = shipName.toLowerCase().split(/\s+/).sort().join(' ');
+  const canonKey = _shipCardWordIndex[normalized];
+  return canonKey ? shipCards[canonKey] : {};                   // word-set match or empty
+}
 
 // ── Extension handoff — reads data injected via URL hash by the Chrome ext ────
 // When the SC Hangar Exporter extension clicks "Open in Analyzer", it opens
@@ -2724,10 +2456,7 @@ autoLoadShipCards();
       localStorage.setItem('sc-resets', JSON.stringify(data.resetSessions));
     }
 
-    // Show dashboard if we have sessions OR hangar data — don't require both
-    if (sessions.length || (data.version >= 2 && data.hangar)) {
-      renderDashboard(sessions);
-    }
+    if (sessions.length) renderDashboard(sessions);
 
   } catch (e) {
     console.warn('[analyzer] Could not parse extension handoff data:', e);
@@ -2788,10 +2517,7 @@ function processFiles(files) {
             localStorage.setItem('sc-resets', JSON.stringify(data.resetSessions));
           }
 
-          // Show dashboard if we have sessions OR hangar data — don't require both
-          if (sessions.length || (data.version >= 2 && data.hangar)) {
-            renderDashboard(sessions);
-          }
+          if (sessions.length) renderDashboard(sessions);
           loadedFromExport = true;
           return;
         }
@@ -2808,6 +2534,7 @@ function processFiles(files) {
           const sample = Object.values(data)[0];
           if (sample && ('erkul_url' in sample || 'career' in sample || 'description' in sample)) {
             shipCards = data;
+            buildShipCardIndex(data);
             console.log(`[analyzer] Loaded ship_cards.json — ${Object.keys(data).length} ships`);
           }
         }
@@ -2859,7 +2586,12 @@ function renderDashboard(_sessions) {
   const playerHandle = [...allSessions].reverse().find(s => s.handle)?.handle || '';
   const linkEl = document.getElementById('player-handle-link');
   if (playerHandle) {
-    linkEl.innerHTML = `— <a href="https://robertsspaceindustries.com/citizens/${playerHandle}" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:none;font-size:14px;font-weight:600" title="View RSI Citizen Dossier">${playerHandle} ↗</a> `;
+    // Only build the RSI link for a valid handle charset; otherwise show plain
+    // escaped text. URL-encode the path and HTML-escape the display label.
+    const validHandle = /^[A-Za-z0-9_-]{2,30}$/.test(playerHandle);
+    linkEl.innerHTML = validHandle
+      ? `— <a href="https://robertsspaceindustries.com/citizens/${encodeURIComponent(playerHandle)}" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:none;font-size:14px;font-weight:600" title="View RSI Citizen Dossier">${esc(playerHandle)} ↗</a> `
+      : `— <span style="color:var(--cyan);font-size:14px;font-weight:600">${esc(playerHandle)}</span> `;
   } else {
     linkEl.innerHTML = '';
   }
@@ -3222,7 +2954,7 @@ function renderDashboard(_sessions) {
         <td style="text-align:center"><button class="mark-reset-btn${isReset ? ' is-reset' : ''}" title="Mark as reset point">↺</button></td>
         <td class="td-date">${fmtDate(s.startDate)}${isReset ? '<span class="reset-chip">RESET</span>' : ''}</td>
         <td class="td-dur">${fmtDur(s.durMs)}</td>
-        <td><span class="td-patch ${patchClass(s.patch)}">${s.patch}</span></td>
+        <td><span class="td-patch ${patchClass(s.patch)}">${esc(s.patch)}</span></td>
         <td class="td-missions">${s.missionsDone > 0 ? s.missionsDone : '—'}</td>
         <td class="td-missions" style="color:var(--gold)">${s.bpNames.length > 0 ? s.bpNames.length : '—'}</td>
         <td class="td-missions" style="color:var(--purple)" title="${s.rewardsEarned > 0 ? `MG: ${s.rewardsMG} · Council: ${s.rewardsCouncil}` : ''}">${s.rewardsEarned > 0 ? s.rewardsEarned : '—'}</td>
@@ -3230,7 +2962,7 @@ function renderDashboard(_sessions) {
         <td class="td-combat">${getCombatStr(s)}</td>
         <td>${crashIcon}</td>
         <td class="td-mining">${s.isMining ? '⛏' : ''}</td>
-        <td class="td-ships" title="${shipStr}">${shipStr}</td>
+        <td class="td-ships" title="${esc(shipStr)}">${esc(shipStr)}</td>
       `;
       tr.querySelector('.mark-reset-btn').addEventListener('click', e => {
         e.stopPropagation();
@@ -3252,7 +2984,7 @@ function renderDashboard(_sessions) {
       sortedParty.forEach(([name, count]) => {
         const li = document.createElement('li');
         li.className = 'list-item';
-        li.innerHTML = `<span class="li-dot green"></span><span class="li-name">${name}</span><span class="li-count">${count} session${count>1?'s':''}</span>`;
+        li.innerHTML = `<span class="li-dot green"></span><span class="li-name">${esc(name)}</span><span class="li-count">${count} session${count>1?'s':''}</span>`;
         partyList.appendChild(li);
       });
     } else {
@@ -3319,7 +3051,7 @@ function renderDashboard(_sessions) {
 
       card.innerHTML = `
         <div class="pool-card-hd">
-          <span class="pool-name" title="${name}">${name.replace(/\[([^\]]+)\]/g, '<span style="opacity:.55;font-style:italic">[$1]</span>')}</span>
+          <span class="pool-name" title="${esc(name)}">${esc(name).replace(/\[([^\]]+)\]/g, '<span style="opacity:.55;font-style:italic">[$1]</span>')}</span>
           <span class="pool-prog"><span class="done">${haveCount}</span> / ${total} &nbsp;${pct}%</span>
         </div>
         <div class="pool-bar-wrap"><div class="pool-bar" style="width:${pct}%"></div></div>
@@ -3327,12 +3059,12 @@ function renderDashboard(_sessions) {
           ${have.length ? `
             <div class="pool-section-hd">✅ Have (${have.length})</div>
             <div class="pool-bp-list">${have.map(b =>
-              `<span class="pool-bp have" title="${b.category_label}">${b.name}</span>`
+              `<span class="pool-bp have" title="${esc(b.category_label)}">${esc(b.name)}</span>`
             ).join('')}</div>` : ''}
           ${need.length ? `
             <div class="pool-section-hd">❌ Still Need (${need.length})</div>
             <div class="pool-bp-list">${need.map(b =>
-              `<span class="pool-bp need" title="${b.category_label}">${b.name}</span>`
+              `<span class="pool-bp need" title="${esc(b.category_label)}">${esc(b.name)}</span>`
             ).join('')}</div>` : ''}
           ${complete ? '<div class="pool-hint">🎉 Pool complete!</div>' : ''}
         </div>
@@ -3375,7 +3107,7 @@ function renderDashboard(_sessions) {
     sortedShips.forEach(([ship, count]) => {
       const li = document.createElement('li');
       li.className = 'list-item';
-      li.innerHTML = `<span class="li-dot cyan"></span><span class="li-name cyan">${ship}</span><span class="li-count">${count} session${count>1?'s':''}</span>`;
+      li.innerHTML = `<span class="li-dot cyan"></span><span class="li-name cyan">${esc(ship)}</span><span class="li-count">${count} session${count>1?'s':''}</span>`;
       shipsList.appendChild(li);
     });
   }
@@ -3392,7 +3124,7 @@ function renderDashboard(_sessions) {
         const li = document.createElement('li');
         li.className = 'list-item';
         const friendly = type.replace(/_/g,' ').replace(/InterSec\s*/i,'').replace(/Nyx\s*/i,'').trim();
-        li.innerHTML = `<span class="li-dot" style="background:var(--orange);box-shadow:0 0 4px var(--orange)"></span><span class="li-name">${friendly}</span><span class="li-count">${count}</span>`;
+        li.innerHTML = `<span class="li-dot" style="background:var(--orange);box-shadow:0 0 4px var(--orange)"></span><span class="li-name">${esc(friendly)}</span><span class="li-count">${count}</span>`;
         mtList.appendChild(li);
       });
     } else {
@@ -3495,7 +3227,7 @@ function renderDashboard(_sessions) {
       sortedW.forEach(([w, c]) => {
         const li = document.createElement('li');
         li.className = 'list-item';
-        li.innerHTML = `<span class="li-dot" style="background:var(--orange)"></span><span class="li-name">${w}</span><span class="li-count">${c}</span>`;
+        li.innerHTML = `<span class="li-dot" style="background:var(--orange)"></span><span class="li-name">${esc(w)}</span><span class="li-count">${c}</span>`;
         wList.appendChild(li);
       });
     } else {
@@ -3510,7 +3242,7 @@ function renderDashboard(_sessions) {
       sortedS.forEach(([s, c]) => {
         const li = document.createElement('li');
         li.className = 'list-item';
-        li.innerHTML = `<span class="li-dot" style="background:var(--red)"></span><span class="li-name">${s}</span><span class="li-count">${c}</span>`;
+        li.innerHTML = `<span class="li-dot" style="background:var(--red)"></span><span class="li-name">${esc(s)}</span><span class="li-count">${c}</span>`;
         sList.appendChild(li);
       });
     } else {
@@ -3537,13 +3269,13 @@ function renderDashboard(_sessions) {
         const isTrophy = Object.keys(trophyTotal).includes(name);
         const cell = document.createElement('div');
         cell.className = 'mineral-cell';
-        cell.innerHTML = `<div class="mc-name">${isTrophy ? '🏆 ' : '💎 '}${name}</div><div class="mc-count">${count}</div><div class="mc-sub">${isTrophy ? 'trophy' : 'gem'}</div>`;
+        cell.innerHTML = `<div class="mc-name">${isTrophy ? '🏆 ' : '💎 '}${esc(name)}</div><div class="mc-count">${count}</div><div class="mc-sub">${isTrophy ? 'trophy' : 'gem'}</div>`;
         grid.appendChild(cell);
       });
       const refRow = document.getElementById('refinery-row');
       refRow.innerHTML = Object.entries(refineryTotal).length
         ? `<span style="font-family:'Consolas','Courier New',monospace;font-size:9px;color:var(--text-dim);margin-right:8px">REFINERY COMPLETIONS:</span>` +
-          Object.entries(refineryTotal).map(([loc, count]) => `<span class="ref-badge">${loc}: ${count}</span>`).join('')
+          Object.entries(refineryTotal).map(([loc, count]) => `<span class="ref-badge">${esc(loc)}: ${count}</span>`).join('')
         : '';
     } else {
       miningPanel.style.display = 'block';
@@ -3564,7 +3296,7 @@ function renderDashboard(_sessions) {
       if (!value) return '';
       return `<div style="display:flex;flex-direction:column;gap:2px">
         <div style="font-size:10px;font-weight:600;letter-spacing:.06em;color:var(--text-dim);text-transform:uppercase">${icon} ${label}</div>
-        <div style="font-size:13px;font-weight:500;color:var(--text-bright)">${value}</div>
+        <div style="font-size:13px;font-weight:500;color:var(--text-bright)">${esc(value)}</div>
       </div>`;
     }
 
@@ -3602,7 +3334,7 @@ function renderDashboard(_sessions) {
       [...allBPs].reverse().forEach(({ bp, date, isNew }) => {
         const li = document.createElement('li');
         li.className = 'list-item' + (isNew ? '' : ' bp-dupe');
-        li.innerHTML = `<span class="li-dot gold" style="${isNew?'':'opacity:.4'}"></span><span class="li-name gold">${bp}</span><span class="li-date">${date}${isNew ? '' : ' ·dupe'}</span>`;
+        li.innerHTML = `<span class="li-dot gold" style="${isNew?'':'opacity:.4'}"></span><span class="li-name gold">${esc(bp)}</span><span class="li-date">${date}${isNew ? '' : ' ·dupe'}</span>`;
         bpList.appendChild(li);
       });
     } else {
@@ -3638,7 +3370,7 @@ function renderDashboard(_sessions) {
         const slots = ARMOR_SLOTS.map(s =>
           `<span class="slot-badge ${have.has(s) ? 'slot-have' : 'slot-miss'}">${have.has(s) ? '✓' : '✗'} ${s}</span>`
         ).join('');
-        card.innerHTML = `<div class="set-name">${setName} <span style="font-size:10px;color:var(--text-dim);font-family:'Consolas','Courier New',monospace">${pct}%</span></div><div class="set-slots">${slots}</div>`;
+        card.innerHTML = `<div class="set-name">${esc(setName)} <span style="font-size:10px;color:var(--text-dim);font-family:'Consolas','Courier New',monospace">${pct}%</span></div><div class="set-slots">${slots}</div>`;
         setGrid.appendChild(card);
       });
     } else {
