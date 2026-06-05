@@ -274,15 +274,25 @@
       <!-- Step 3 -->
       <div class="setup-step">
         <div class="setup-step-num">Step 3</div>
-        <div class="setup-step-title">Enter Your Bot Credentials</div>
-        <p>Your server admin has already set everything up on the bot side. You just need to copy your personal connection details from Discord into the extension.</p>
+        <div class="setup-step-title">Connect to the Bot</div>
+        <p>There are two ways to do this. The first is the easiest — use it if your admin gave you a <strong>Bot API address</strong>.</p>
+
+        <h3 style="margin-top:14px">Option A — Auto-fill <span style="font-size:11px;color:#4ade80">(recommended)</span></h3>
         <ol class="steps">
-          <li>In Discord, open the <strong>Fleet Dashboard</strong> and click <strong>Personal Profile</strong>.</li>
-          <li>Click <strong>📤 Import</strong>. You will see two values: a <strong>Webhook URL</strong> and an <strong>Import Key</strong>.</li>
-          <li>Copy the <strong>Webhook URL</strong> and paste it into <strong>Bot Webhook URL</strong> in the extension. Click Save.</li>
-          <li>Copy the <strong>Import Key</strong> and paste it into <strong>Bot Import Key</strong> in the extension. Click Save.</li>
+          <li>Open the <strong>🔗 Bot Connection</strong> section in the extension.</li>
+          <li>Paste the <strong>Bot API address</strong> your admin gave you and click <strong>Save &amp; Connect</strong>.</li>
+          <li>Approve the one-time permission prompt. Your webhook URL and import key fill in automatically — you're done.</li>
         </ol>
-        <div class="tip">⚠️ Keep your Import Key private — it proves to the bot that uploads came from you. If you think it was compromised, click <strong>Generate New Key</strong> in Discord and paste the new one into the extension. Your old key will stop working immediately.</div>
+        <div class="info">💡 If you're in more than one server with the bot, you'll be asked to pick which one. Choose your org's server.</div>
+
+        <h3 style="margin-top:18px">Option B — Manual entry</h3>
+        <p>If you don't have a Bot API address, copy the two values from Discord instead:</p>
+        <ol class="steps">
+          <li>In Discord, open the <strong>Fleet Dashboard → Personal Profile → 📤 Import</strong>.</li>
+          <li>Copy the <strong>Webhook URL</strong> into <strong>🤖 Bot Webhook URL</strong> in the extension. Click Save.</li>
+          <li>Copy the <strong>Import Key</strong> into <strong>🔑 Bot Import Key</strong> in the extension. Click Save.</li>
+        </ol>
+        <div class="tip">⚠️ Keep your Import Key private — it proves to the bot that uploads came from you. If you think it was compromised, click <strong>Generate New Key</strong> in Discord (auto-fill users just click <strong>Fetch from Bot</strong> again). Your old key stops working immediately.</div>
       </div>
 
       <!-- Step 4 -->
