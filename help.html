@@ -268,36 +268,12 @@
           <li>A Discord authorization tab will open — click <strong>Authorize</strong>.</li>
           <li>The tab closes automatically and your Discord username will appear in the extension.</li>
         </ol>
-        <div class="info">💡 The extension only reads your Discord username and ID to identify you to the bot. It cannot see your messages, servers, or any other account information.</div>
+        <div class="info">💡 The extension only reads your Discord username and ID to identify you to the bot. It cannot see your messages, servers, or any other account information. That's the only setup you need — the extension talks to the bot automatically, with no keys or webhooks to configure.</div>
       </div>
 
       <!-- Step 3 -->
       <div class="setup-step">
         <div class="setup-step-num">Step 3</div>
-        <div class="setup-step-title">Connect to the Bot</div>
-        <p>There are two ways to do this. The first is the easiest — use it if your admin gave you a <strong>Bot API address</strong>.</p>
-
-        <h3 style="margin-top:14px">Option A — Auto-fill <span style="font-size:11px;color:#4ade80">(recommended)</span></h3>
-        <ol class="steps">
-          <li>Open the <strong>🔗 Bot Connection</strong> section in the extension.</li>
-          <li>Paste the <strong>Bot API address</strong> your admin gave you and click <strong>Save &amp; Connect</strong>.</li>
-          <li>Approve the one-time permission prompt. Your webhook URL and import key fill in automatically — you're done.</li>
-        </ol>
-        <div class="info">💡 If you're in more than one server with the bot, you'll be asked to pick which one. Choose your org's server.</div>
-
-        <h3 style="margin-top:18px">Option B — Manual entry</h3>
-        <p>If you don't have a Bot API address, copy the two values from Discord instead:</p>
-        <ol class="steps">
-          <li>In Discord, open the <strong>Fleet Dashboard → Personal Profile → 📤 Import</strong>.</li>
-          <li>Copy the <strong>Webhook URL</strong> into <strong>🤖 Bot Webhook URL</strong> in the extension. Click Save.</li>
-          <li>Copy the <strong>Import Key</strong> into <strong>🔑 Bot Import Key</strong> in the extension. Click Save.</li>
-        </ol>
-        <div class="tip">⚠️ Keep your Import Key private — it proves to the bot that uploads came from you. If you think it was compromised, click <strong>Generate New Key</strong> in Discord (auto-fill users just click <strong>Fetch from Bot</strong> again). Your old key stops working immediately.</div>
-      </div>
-
-      <!-- Step 4 -->
-      <div class="setup-step">
-        <div class="setup-step-num">Step 4</div>
         <div class="setup-step-title">Point It to Your Log Files <span style="font-size:12px;color:#475569;font-weight:400">(optional but recommended)</span></div>
         <p>This lets the extension include your session history — missions, blueprints, combat, and more — alongside your hangar data when you send to the bot.</p>
         <ol class="steps">
@@ -310,7 +286,7 @@
 
       <!-- Step 5 -->
       <div class="setup-step">
-        <div class="setup-step-num">Step 5</div>
+        <div class="setup-step-num">Step 4</div>
         <div class="setup-step-title">You're Ready — Fetch and Send</div>
         <ol class="steps">
           <li>Make sure you are <strong>logged into</strong> <a href="https://robertsspaceindustries.com" target="_blank" rel="noopener">robertsspaceindustries.com</a> in any Chrome tab.</li>
@@ -318,7 +294,7 @@
           <li>Once complete, you have two options:
             <ul style="margin:10px 0 0 20px;line-height:2.2">
               <li><strong>📊 Open in Analyzer</strong> — opens your data in this analyzer instantly, no file needed.</li>
-              <li><strong>📤 Send to Bot</strong> — sends everything to your Discord server so the bot updates your fleet profile.</li>
+              <li><strong>📤 Send to Bot</strong> — sends everything straight to the bot, which updates your fleet profile and replies with a summary right in the extension.</li>
             </ul>
           </li>
         </ol>
@@ -395,36 +371,6 @@
       </ol>
     </div>
 
-    <!-- EXT-007 -->
-    <div class="error-card" id="EXT-007">
-      <div class="error-header">
-        <span class="error-code">EXT-007</span>
-        <span class="error-title">Webhook URL not set</span>
-      </div>
-      <div class="error-cause">The extension needs a Webhook URL to know where to send your data.</div>
-      <div class="fix-label">How to fix</div>
-      <ol class="steps">
-        <li>In Discord, open the <strong>Fleet Dashboard → Personal Profile → 📤 Import</strong>.</li>
-        <li>Copy the <strong>Webhook URL</strong> shown there.</li>
-        <li>Paste it into <strong>Bot Webhook URL</strong> in the extension and click Save.</li>
-      </ol>
-    </div>
-
-    <!-- EXT-008 -->
-    <div class="error-card" id="EXT-008">
-      <div class="error-header">
-        <span class="error-code">EXT-008</span>
-        <span class="error-title">Import Key not set</span>
-      </div>
-      <div class="error-cause">The bot uses your personal Import Key to verify that uploads came from you. The extension doesn't have one saved yet.</div>
-      <div class="fix-label">How to fix</div>
-      <ol class="steps">
-        <li>In Discord, open the <strong>Fleet Dashboard → Personal Profile → 📤 Import</strong>.</li>
-        <li>Copy the <strong>Import Key</strong> shown there.</li>
-        <li>Paste it into <strong>Bot Import Key</strong> in the extension and click Save.</li>
-      </ol>
-    </div>
-
     <!-- EXT-009 -->
     <div class="error-card" id="EXT-009">
       <div class="error-header">
@@ -441,18 +387,16 @@
       <div class="tip">If this happens every time, a browser extension or Brave Shield may be blocking scripts on the analyzer page — see <a href="#browser">Browser Blocking</a>.</div>
     </div>
 
-    <!-- EXT-010 -->
-    <div class="error-card" id="EXT-010">
+    <!-- Send to Bot failures (no code — shown inline in the extension) -->
+    <div class="error-card">
       <div class="error-header">
-        <span class="error-code">EXT-010</span>
-        <span class="error-title">Failed to send to bot</span>
+        <span class="error-title">Send to Bot didn't work</span>
       </div>
-      <div class="error-cause">The extension tried to send your data but Discord returned an error.</div>
-      <div class="fix-label">Common causes</div>
+      <div class="error-cause">If sending fails, the extension shows a short message explaining why. The common ones:</div>
       <ul style="margin:8px 0 12px 16px;line-height:2.2">
-        <li><strong>400</strong> — Something went wrong with the request. Try again; if it repeats, re-copy your Webhook URL from the Import window and paste it again.</li>
-        <li><strong>401 / 403 / 404</strong> — Your Webhook URL may be outdated or invalid. Go back to <strong>Fleet Dashboard → Personal Profile → Import</strong> and re-copy it.</li>
-        <li><strong>429</strong> — Sent too many requests too quickly. Wait a minute and try again.</li>
+        <li><strong>"Could not reach the bot"</strong> — the bot is offline or restarting. Wait a moment and try again.</li>
+        <li><strong>"Your Discord session expired"</strong> — reconnect your Discord account (it disconnects automatically), then send again.</li>
+        <li><strong>"Export is too large"</strong> — usually a very large log history. Try clicking Send again without setting a log folder, or with fewer logs.</li>
       </ul>
     </div>
 
@@ -503,25 +447,17 @@
   <!-- ══════════════════════════════════════════════════════════════ -->
   <section class="section" id="bot">
     <h2>Admin Setup</h2>
-    <p style="color:#fb923c;font-weight:600">This section is for server administrators only. Regular members don't need to do any of this.</p>
+    <p style="color:#4ade80;font-weight:600">Good news: there's almost nothing to do. Imports go straight to the bot, so there are no webhooks, import channels, or keys to set up anymore.</p>
 
-    <h3>Set up the import channel</h3>
+    <h3>What members need</h3>
     <ol class="steps">
-      <li>Create a Discord channel for imports (e.g. <code style="color:#7dd3fc">#fleet-imports</code>). It can be private — only the bot needs access to it.</li>
-      <li>Give the bot these permissions in that channel: <strong>View Channel</strong>, <strong>Send Messages</strong>, <strong>Manage Messages</strong>.</li>
-      <li><strong>Manage Messages is required</strong> — the bot immediately deletes the webhook post after reading it so the import key never sits visible in the channel.</li>
+      <li>The bot must be in your Discord server, and the member must be a member of that server.</li>
+      <li>The member installs the extension and clicks <strong>Connect Discord Account</strong> — that's the whole setup.</li>
     </ol>
+    <div class="info">💡 The bot identifies each member from their Discord login and matches them to your server automatically. There are no import keys or webhook URLs to distribute or manage.</div>
 
-    <h3>Create the webhook</h3>
-    <ol class="steps">
-      <li>Open the import channel → <strong>Edit Channel</strong> → <strong>Integrations</strong> → <strong>Webhooks</strong> → <strong>New Webhook</strong>.</li>
-      <li>Name it (e.g. "SC Hangar Importer") and copy the URL.</li>
-      <li>The bot stores this webhook URL and surfaces it to each member in their personal <strong>Fleet Dashboard → Personal Profile → Import</strong> window. Members copy it from there — you don't need to distribute it manually.</li>
-    </ol>
-    <div class="tip">⚠️ Treat the webhook URL as semi-sensitive. Anyone with it can post to the channel, but they still need a valid personal import key to trigger an actual import.</div>
-
-    <h3>Import keys</h3>
-    <p>Each member gets a personal import key automatically when they first use the bot. They can view it and generate a new one via <strong>Personal Profile → 📤 Import</strong>. Keys are stored in the bot's database and are never visible in Discord after the initial webhook post is deleted.</p>
+    <h3>Optional: the in-Discord Fleet Dashboard</h3>
+    <p>If you want the Fleet Dashboard inside Discord — for viewing profiles, leaderboards, and the org fleet — run <code style="color:#7dd3fc">/setupdashboard</code> in the channel where you'd like it. This is optional and is <strong>not</strong> required for hangar imports to work.</p>
   </section>
 
   <!-- ══════════════════════════════════════════════════════════════ -->
@@ -531,19 +467,19 @@
     <h2>FAQ</h2>
 
     <h3>Does the extension send my data anywhere automatically?</h3>
-    <p>No. Nothing happens unless you click a button. Data only leaves your device when you click <strong>Send to Bot</strong> (sends to your server's import channel) or <strong>Download JSON</strong> (saves to your Downloads folder). <strong>Open in Analyzer</strong> pushes data directly to the browser tab — nothing goes to any server.</p>
+    <p>No. Nothing happens unless you click a button. Data only leaves your device when you click <strong>Send to Bot</strong> (sends it to the bot) or <strong>Download JSON</strong> (saves to your Downloads folder). <strong>Open in Analyzer</strong> pushes data directly to the browser tab — nothing goes to any server.</p>
 
     <h3>What exactly does the bot receive?</h3>
-    <p>When you click Send to Bot, the extension sends: your ships, paints, blueprints, session stats (missions, kills, deaths, aUEC earned), and hardware info (CPU, GPU, RAM) from your log files. The bot deletes the webhook post immediately after reading it — no one in the channel can see or download your data.</p>
+    <p>When you click Send to Bot, the extension sends: your ships, paints, blueprints, session stats (missions, kills, deaths, aUEC earned), and hardware info (CPU, GPU, RAM) from your log files. It's sent over an encrypted (HTTPS) connection straight to the bot — it never passes through a Discord channel, so no one else can see or download it.</p>
 
     <h3>Can someone spoof an import as me?</h3>
-    <p>Not if your Import Key is private. The bot validates your key on every import — without it, the upload is rejected. If you think your key was compromised, go to <strong>Fleet Dashboard → Personal Profile → Import</strong> and click <strong>Generate New Key</strong>. Your old key stops working immediately.</p>
+    <p>No. Every import is authenticated with your Discord login — the bot confirms your identity with Discord on each upload, so only you can update your own profile. There's no key to leak or manage. If you're ever concerned, just click <strong>Disconnect</strong> in the extension; reconnecting starts a fresh session.</p>
 
     <h3>My Send to Bot button is greyed out</h3>
-    <p>All four conditions must be met before you can send: hangar data fetched, Discord connected, Webhook URL saved, and Import Key saved. Hover over the button to see which step is still missing.</p>
+    <p>Two things are needed before you can send: your hangar data must be fetched, and your Discord account must be connected. Hover over the button to see which one is still missing.</p>
 
-    <h3>I'm not receiving a DM after importing</h3>
-    <p>The bot sends import results via Direct Message. Check your Discord privacy settings: <strong>User Settings → Privacy & Safety → Allow direct messages from server members</strong>. If DMs are off, the bot will post a brief notification in the server instead.</p>
+    <h3>Where do my import results show up?</h3>
+    <p>Right in the extension. After you click Send to Bot, it shows a summary of exactly what was imported — ships added, sessions stored, and so on. You don't need to check Discord or wait for a DM.</p>
 
     <h3>The extension worked before but now shows errors</h3>
     <p>RSI occasionally updates their website, which can affect how the extension reads your hangar. Check for an extension update in the Chrome Web Store. If Discord Connect fails, try disconnecting and reconnecting — your session may have expired.</p>
