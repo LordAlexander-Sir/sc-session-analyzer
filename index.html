@@ -1619,10 +1619,25 @@ function renderHangarPanel(handle, hangar) {
   const panel = document.getElementById('hangar-panel');
   if (!panel) return;
 
-  const ships   = hangar.ships    || [];
   const paints  = hangar.paints   || [];
   const bps     = hangar.blueprints || [];
-  const pledges = hangar.pledges  || [];
+
+  // Split owned ships into in-game cards vs unreleased pledges using the
+  // ship_cards.json classification. The extension export puts every ship in
+  // `ships` with an empty `pledges`; the bot API pre-splits them — both work
+  // here. A ship whose card is tagged status:'unreleased' is routed to the
+  // Pledges panel with its loaners; anything else (incl. ships with no card)
+  // stays an in-game card, so we never hide an owned ship.
+  const ships   = [];
+  const pledges = [...(hangar.pledges || [])];
+  (hangar.ships || []).forEach(s => {
+    const card = findShipCard(s.name) || {};
+    if (card.status === 'unreleased') {
+      pledges.push({ name: s.name, lti: s.lti, loaner_ship: (card.loaners || []).join(', ') });
+    } else {
+      ships.push(s);
+    }
+  });
 
   // Show data section, hide empty state
   document.getElementById('hangar-empty').style.display = 'none';
