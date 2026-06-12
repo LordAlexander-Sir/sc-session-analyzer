@@ -109,8 +109,8 @@ body {
 }
 .theme-toggle {
   background: rgba(5,12,24,0.55);
-  border: 1px solid var(--border2);
-  color: var(--text-bright);
+  border: 1px solid rgba(0,200,255,0.45);
+  color: #e8f4ff;   /* header banner is always dark → always light text */
   font-size: 15px;
   padding: 6px 14px;
   cursor: pointer;
@@ -127,8 +127,8 @@ body {
 }
 .help-btn {
   background: rgba(5,12,24,0.55);
-  border: 1px solid var(--border2);
-  color: var(--text-bright);
+  border: 1px solid rgba(0,200,255,0.45);
+  color: #e8f4ff;   /* header banner is always dark → always light text */
   font-size: 12px;
   font-weight: 700;
   letter-spacing: .06em;
@@ -1083,6 +1083,139 @@ body::after {
   font-weight: 700;
   opacity: .65;
 }
+
+/* ── SUB-TABS (segmented control within a main tab, e.g. Blueprints) ── */
+.sub-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 18px;
+  padding: 4px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  box-shadow: var(--shadow-sm);
+}
+[data-theme="dark"] .sub-tabs {
+  background: rgba(5,12,24,0.5);
+  border-color: rgba(0,229,255,0.28);
+  box-shadow: inset 0 0 12px rgba(0,229,255,0.05);
+}
+.sub-tab {
+  flex: 0 0 auto;
+  padding: 8px 18px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  transition: color .15s, background .2s, box-shadow .2s;
+}
+.sub-tab:hover { color: var(--text-bright); background: var(--cyan-dim); }
+.sub-tab:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+.sub-tab.active {
+  color: var(--cyan);
+  background: var(--cyan-dim);
+  box-shadow: inset 0 0 0 1px var(--cyan), 0 0 10px rgba(0,200,255,0.12);
+}
+[data-theme="dark"] .sub-tab.active {
+  box-shadow: inset 0 0 0 1px rgba(0,229,255,0.6), 0 0 12px rgba(0,229,255,0.2);
+}
+
+/* sub-panes — only the active one is shown */
+.bp-subpane { display: none; }
+.bp-subpane.active { display: block; }
+.bp-empty {
+  text-align: center;
+  padding: 40px 16px;
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ── BLUEPRINT CARDS ── */
+.bp-controls { display: flex; gap: 10px; margin-bottom: 12px; }
+.bp-search {
+  flex: 1;
+  padding: 9px 14px;
+  border-radius: 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-size: 12px;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+.bp-search::placeholder { color: var(--text-dim); }
+.bp-search:focus { outline: none; border-color: var(--cyan); box-shadow: var(--cyan-glow); }
+#bp-cats { margin-bottom: 18px; }
+
+.bp-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  transition: border-color .2s, box-shadow .2s;
+}
+.bp-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+[data-theme="dark"] .bp-card:hover {
+  border-color: var(--border2);
+  box-shadow: 0 0 20px rgba(255,208,48,0.07);
+}
+.bp-card-hd {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 13px 14px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.bp-card-titles { flex: 1; min-width: 0; }
+.bp-card-name { font-weight: 700; font-size: 13px; color: var(--text-bright); line-height: 1.25; }
+.bp-card-sub {
+  font-size: 10px; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: .05em; margin-top: 3px;
+}
+.bp-grade {
+  flex-shrink: 0;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 10px; font-weight: 700;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+.bp-card-body { padding: 11px 14px 13px; flex: 1; }
+.bp-meta {
+  font-size: 10px; color: var(--text-dim); margin-bottom: 10px;
+  font-family: 'Consolas', 'Courier New', monospace;
+}
+.bp-ings { display: flex; flex-direction: column; gap: 4px; }
+.bp-ing {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  font-size: 12px; padding: 5px 9px; border-radius: 4px; background: var(--surface);
+}
+.bp-ing-name { color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bp-ing-qty { font-family: 'Consolas', 'Courier New', monospace; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.bp-ing-qty.resource { color: var(--cyan); }
+.bp-ing-qty.item { color: var(--gold); }
+.bp-none { font-size: 12px; color: var(--text-dim); font-style: italic; }
+.bp-card-ft { padding: 8px 14px; border-top: 1px solid var(--border); text-align: right; }
+.bp-card-ft a { color: var(--cyan); font-size: 11px; text-decoration: none; }
+.bp-card-ft a:hover { text-decoration: underline; }
 .ship-card {
   background: var(--surface2);
   border: 1px solid var(--border);
@@ -1539,14 +1672,28 @@ body::after {
 
   <!-- ── BLUEPRINTS TAB ── -->
   <div class="tab-pane" id="tab-blueprints">
+    <div class="sub-tabs" id="bp-subtabs">
+      <button class="sub-tab active" data-sub="blueprints">Blueprints</button>
+      <button class="sub-tab" data-sub="armor">Armor Sets</button>
+      <button class="sub-tab" data-sub="missions">Mission Progress</button>
+    </div>
+
+    <div class="bp-subpane active" id="bp-pane-blueprints">
     <div class="panel">
       <div class="panel-hd">
         Blueprints Earned <span class="count" id="bp-count"></span>
         <span class="alltime-badge">ALL-TIME</span>
         <button id="export-bp-btn" class="btn" style="margin-top:0;padding:4px 14px;font-size:10px;display:none" onclick="exportBlueprintList()">⬇ Export for Bot</button>
       </div>
-      <div class="scrollable"><ul id="bp-list" style="list-style:none"></ul></div>
+      <div class="bp-controls">
+        <input class="bp-search" id="bp-search" type="text" placeholder="Search blueprint name…">
+      </div>
+      <div class="mfg-tabs" id="bp-cats"></div>
+      <div class="ship-cards-grid" id="bp-card-grid"></div>
     </div>
+    </div><!-- /bp-pane-blueprints -->
+
+    <div class="bp-subpane" id="bp-pane-armor">
     <div class="panel" id="set-panel" style="display:none">
       <div class="panel-hd">
         Armor Set Progress <span class="count" id="set-count"></span>
@@ -1554,6 +1701,10 @@ body::after {
       </div>
       <div id="set-grid" class="mineral-grid"></div>
     </div>
+    <div class="bp-empty" id="armor-empty" style="display:none">No armor sets in progress yet — earn an armor-piece blueprint and its set progress shows up here.</div>
+    </div><!-- /bp-pane-armor -->
+
+    <div class="bp-subpane" id="bp-pane-missions">
     <div class="panel" id="pools-panel">
       <div class="panel-hd">🎯 Mission Blueprint Pools <span class="count" id="pools-count"></span></div>
       <div id="pools-no-data" style="display:none;text-align:center;padding:28px 16px;color:var(--text-dim)">
@@ -1576,6 +1727,7 @@ body::after {
         </div>
       </div>
     </div>
+    </div><!-- /bp-pane-missions -->
   </div>
 
   <!-- ── COMBAT TAB ── -->
@@ -2585,6 +2737,119 @@ async function autoLoadShipCards() {
 }
 autoLoadShipCards();
 
+// ── Blueprint crafting data (blueprints_data.json) ──────────────────────────
+let blueprintData    = null;   // { by_name, by_uuid, ... }
+let _lastEarnedBPs   = null;   // remember earned names so we can re-render when data lands
+async function autoLoadBlueprintData() {
+  try {
+    const resp = await fetch('./blueprints_data.json');
+    if (!resp.ok) return;
+    const data = await resp.json();
+    if (data && data.by_uuid && data.by_name) {
+      blueprintData = data;
+      console.log(`[analyzer] Auto-loaded blueprints_data.json — ${data.total} blueprints, game ver ${data.game_version}`);
+      if (_lastEarnedBPs) renderBlueprintCards(_lastEarnedBPs);
+    }
+  } catch (_) { /* silently ignore — cards fall back to name-only */ }
+}
+autoLoadBlueprintData();
+
+// Look up a blueprint record by its (case-insensitive) name
+function findBlueprint(name) {
+  if (!blueprintData) return null;
+  const uuid = blueprintData.by_name[(name || '').toLowerCase().trim()];
+  return uuid ? blueprintData.by_uuid[uuid] : null;
+}
+
+// Render earned blueprints as crafting cards, with category chips + search.
+function renderBlueprintCards(seenBPNames) {
+  _lastEarnedBPs = seenBPNames;
+  const grid    = document.getElementById('bp-card-grid');
+  const catsBar = document.getElementById('bp-cats');
+  const search  = document.getElementById('bp-search');
+  if (!grid || !catsBar || !search) return;
+
+  const earned = [...seenBPNames]
+    .map(name => ({ name, entry: findBlueprint(name) }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  if (!earned.length) {
+    grid.innerHTML = '<div class="empty">No blueprints recorded</div>';
+    catsBar.innerHTML = '';
+    return;
+  }
+
+  // Tally categories present among earned blueprints
+  const cats = {};   // category -> { label, count }
+  earned.forEach(({ entry }) => {
+    const c   = entry ? entry.category       : 'unknown';
+    const lab = entry ? entry.category_label : '❔ No Data';
+    (cats[c] = cats[c] || { label: lab, count: 0 }).count++;
+  });
+
+  const qtyStr = ing => ing.kind === 'resource'
+    ? `${(+ing.quantity_scu).toLocaleString(undefined, { maximumFractionDigits: 2 })} SCU`
+    : `×${ing.quantity}`;
+
+  const cardHtml = ({ name, entry }) => {
+    if (!entry) {
+      return `<div class="bp-card" data-cat="unknown" data-name="${esc(name.toLowerCase())}">
+        <div class="bp-card-hd"><div class="bp-card-titles"><div class="bp-card-name">${esc(name)}</div></div></div>
+        <div class="bp-card-body"><div class="bp-none">No crafting data found for this blueprint.</div></div>
+      </div>`;
+    }
+    const grade = entry.grade ? `<span class="bp-grade">G${esc(entry.grade)}</span>` : '';
+    const ings = (entry.ingredients || []).map(ing =>
+      `<div class="bp-ing"><span class="bp-ing-name">${esc(ing.name)}</span><span class="bp-ing-qty ${ing.kind}">${esc(qtyStr(ing))}</span></div>`
+    ).join('') || '<div class="bp-none">No materials listed.</div>';
+    const ftr = entry.web_url ? `<div class="bp-card-ft"><a href="${entry.web_url}" target="_blank" rel="noopener">Wiki ↗</a></div>` : '';
+    return `<div class="bp-card" data-cat="${esc(entry.category)}" data-name="${esc(entry.name.toLowerCase())}">
+      <div class="bp-card-hd">
+        <div class="bp-card-titles">
+          <div class="bp-card-name">${esc(entry.name)}</div>
+          <div class="bp-card-sub">${esc(entry.type_label || entry.category_label || '')}</div>
+        </div>
+        ${grade}
+      </div>
+      <div class="bp-card-body">
+        <div class="bp-meta">⏱ ${esc(entry.craft_time_label || '—')}  ·  ${entry.ingredient_count} material${entry.ingredient_count !== 1 ? 's' : ''}</div>
+        <div class="bp-ings">${ings}</div>
+      </div>
+      ${ftr}
+    </div>`;
+  };
+
+  grid.innerHTML = earned.map(cardHtml).join('');
+
+  // Category chips (reuse .mfg-tab pill styling): All + each present category
+  const chips = [['__all__', 'All', earned.length]]
+    .concat(Object.entries(cats)
+      .sort((a, b) => b[1].count - a[1].count)
+      .map(([c, o]) => [c, o.label, o.count]));
+  catsBar.innerHTML = chips.map(([c, lab, n], i) =>
+    `<button class="mfg-tab${i === 0 ? ' active' : ''}" data-cat="${esc(c)}"><span>${esc(lab)}</span><span class="mfg-tab-count">${n}</span></button>`
+  ).join('');
+
+  let activeCat = '__all__';
+  const applyFilter = () => {
+    const q = (search.value || '').toLowerCase().trim();
+    grid.querySelectorAll('.bp-card').forEach(card => {
+      const okCat = activeCat === '__all__' || card.dataset.cat === activeCat;
+      const okQ   = !q || card.dataset.name.includes(q);
+      card.style.display = (okCat && okQ) ? '' : 'none';
+    });
+  };
+  catsBar.onclick = e => {
+    const t = e.target.closest('.mfg-tab');
+    if (!t) return;
+    catsBar.querySelectorAll('.mfg-tab').forEach(b => b.classList.remove('active'));
+    t.classList.add('active');
+    activeCat = t.dataset.cat;
+    applyFilter();
+  };
+  search.oninput = applyFilter;
+}
+
 // Word-set index for fuzzy name matching
 // e.g. "Hercules Starlifter M2" (hangar export) finds "M2 Hercules Starlifter" (erkul key)
 let _shipCardWordIndex = null;
@@ -3538,8 +3803,6 @@ function renderDashboard(_sessions) {
 
   // ── Blueprints (static, all-time) ──
   function renderBlueprints(allBPs, seenBPNames, uniqueBPCount, bpSessionCount) {
-    const bpList = document.getElementById('bp-list');
-    bpList.innerHTML = '';
     document.getElementById('bp-count').textContent =
       uniqueBPCount === allBPs.length
         ? `${uniqueBPCount}`
@@ -3548,16 +3811,8 @@ function renderDashboard(_sessions) {
     window._exportBPNames = [...seenBPNames];
     document.getElementById('export-bp-btn').style.display = uniqueBPCount > 0 ? 'inline-block' : 'none';
 
-    if (allBPs.length) {
-      [...allBPs].reverse().forEach(({ bp, date, isNew }) => {
-        const li = document.createElement('li');
-        li.className = 'list-item' + (isNew ? '' : ' bp-dupe');
-        li.innerHTML = `<span class="li-dot gold" style="${isNew?'':'opacity:.4'}"></span><span class="li-name gold">${esc(bp)}</span><span class="li-date">${date}${isNew ? '' : ' ·dupe'}</span>`;
-        bpList.appendChild(li);
-      });
-    } else {
-      bpList.innerHTML = '<div class="empty">No blueprints recorded</div>';
-    }
+    // Rich crafting cards (category chips + search) — replaces the old flat list
+    renderBlueprintCards(seenBPNames);
 
     // Armor set progress (all-time)
     const ARMOR_SLOTS = ['Core','Helmet','Arms','Legs','Backpack','Undersuit'];
@@ -3576,8 +3831,10 @@ function renderDashboard(_sessions) {
     const setPanel = document.getElementById('set-panel');
     const setGrid  = document.getElementById('set-grid');
     const setNames = Object.keys(armorSets).sort();
+    const armorEmpty = document.getElementById('armor-empty');
     if (setNames.length) {
       setPanel.style.display = 'block';
+      if (armorEmpty) armorEmpty.style.display = 'none';
       document.getElementById('set-count').textContent = `${setNames.length} set${setNames.length!==1?'s':''}`;
       setGrid.innerHTML = '';
       setNames.forEach(setName => {
@@ -3593,9 +3850,25 @@ function renderDashboard(_sessions) {
       });
     } else {
       setPanel.style.display = 'none';
+      if (armorEmpty) armorEmpty.style.display = 'block';
     }
   }
 }
+
+// ── Blueprints sub-tabs (Blueprints / Armor Sets / Mission Progress) ──
+(function(){
+  const bar = document.getElementById('bp-subtabs');
+  if (!bar) return;
+  bar.addEventListener('click', e => {
+    const t = e.target.closest('.sub-tab');
+    if (!t) return;
+    bar.querySelectorAll('.sub-tab').forEach(b => b.classList.remove('active'));
+    t.classList.add('active');
+    document.querySelectorAll('#tab-blueprints .bp-subpane').forEach(p => p.classList.remove('active'));
+    const pane = document.getElementById('bp-pane-' + t.dataset.sub);
+    if (pane) pane.classList.add('active');
+  });
+})();
 
 // ── Theme toggle ──
 (function(){
