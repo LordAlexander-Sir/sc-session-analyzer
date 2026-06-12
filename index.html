@@ -798,47 +798,94 @@ body::after {
 [data-theme="dark"] .s-val { text-shadow: 0 0 22px currentColor; }
 [data-theme="dark"] .td-dur { text-shadow: 0 0 14px var(--cyan); }
 
-/* ── TAB NAVIGATION ── */
+/* ── TAB NAVIGATION — HUD / MFD console bar ── */
 .tab-nav {
   display: flex;
   gap: 0;
-  border-bottom: 2px solid var(--border);
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  padding: 4px;
+  border-radius: 10px;
+  /* inset console panel: cyan neon border + soft outer glow */
+  background: var(--surface);
+  border: 1px solid var(--cyan);
+  box-shadow: var(--cyan-glow);
   overflow-x: auto;
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 .tab-nav::-webkit-scrollbar { display: none; }
+
+[data-theme="dark"] .tab-nav {
+  background: linear-gradient(180deg, rgba(13,30,54,0.55), rgba(5,12,24,0.85));
+  border-color: rgba(0,229,255,0.55);
+  box-shadow:
+    inset 0 0 16px rgba(0,229,255,0.07),
+    0 0 0 1px rgba(0,229,255,0.10),
+    0 0 22px rgba(0,229,255,0.22);
+}
+
 .tab-btn {
   position: relative;
-  padding: 14px 28px;
+  flex: 0 0 auto;
+  padding: 13px 26px;
   background: none;
   border: none;
-  border-bottom: 3px solid rgba(0,200,255,0.18);
-  color: var(--text-dim);
+  color: var(--text);
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: .12em;
+  font-weight: 800;
+  letter-spacing: .18em;
   text-transform: uppercase;
   cursor: pointer;
   white-space: nowrap;
-  transition: color .15s, border-color .2s, text-shadow .2s;
-  margin-bottom: -2px;
+  transition: color .15s, background .2s, text-shadow .2s;
   font-family: 'Segoe UI', system-ui, sans-serif;
 }
+
+/* thin vertical cyan dividers between every tab (segmented MFD feel) */
+.tab-btn + .tab-btn {
+  border-left: 1px solid rgba(0,82,158,0.22);
+}
+[data-theme="dark"] .tab-btn + .tab-btn {
+  border-left-color: rgba(0,229,255,0.16);
+}
+
+/* underline indicator (hover + active) — pseudo-element so we control glow/thickness */
+.tab-btn::after {
+  content: '';
+  position: absolute;
+  left: 16px; right: 16px;
+  bottom: 5px;
+  height: 2px;
+  border-radius: 2px;
+  background: transparent;
+  transition: background .2s, box-shadow .2s, height .15s;
+}
+
 .tab-btn:hover {
   color: var(--text-bright);
-  border-bottom-color: rgba(0,200,255,0.45);
+  background: var(--cyan-dim);
 }
-.tab-btn.active {
-  color: var(--green);
-  border-bottom-color: var(--green);
+.tab-btn:hover::after { background: var(--cyan); }
+
+.tab-btn:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: -3px;
+  color: var(--text-bright);
 }
+
+/* active state — thicker green underline + neon glow */
+.tab-btn.active { color: var(--green); }
+.tab-btn.active::after {
+  height: 3px;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green), 0 1px 3px var(--green);
+}
+
 [data-theme="dark"] .tab-btn.active {
-  text-shadow: 0 0 22px rgba(0,232,122,0.7), 0 0 8px rgba(0,232,122,0.4);
+  text-shadow: 0 0 20px rgba(0,232,122,0.7), 0 0 7px rgba(0,232,122,0.45);
 }
-[data-theme="dark"] .tab-btn:not(.active) {
-  border-bottom-color: rgba(0,200,255,0.15);
+[data-theme="dark"] .tab-btn.active::after {
+  box-shadow: 0 0 16px rgba(0,232,122,0.95), 0 0 6px rgba(0,232,122,0.7);
 }
 
 /* Tab panes */
