@@ -981,6 +981,61 @@ body::after {
   grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
   gap: 14px;
 }
+
+/* ── HANGAR MANUFACTURER SUB-TABS ── */
+.mfg-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.mfg-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 999px;
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  transition: color .15s, border-color .2s, background .2s, box-shadow .2s;
+}
+.mfg-tab:hover {
+  border-color: var(--cyan);
+  color: var(--text-bright);
+}
+.mfg-tab.active {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: var(--cyan-dim);
+  box-shadow: var(--cyan-glow);
+}
+.mfg-tab-logo {
+  height: 16px;
+  width: auto;
+  flex-shrink: 0;
+  filter: brightness(0);   /* light theme → dark logo */
+  opacity: .6;
+}
+[data-theme="dark"] .mfg-tab-logo {
+  filter: brightness(10);  /* dark theme → white logo */
+  opacity: .8;
+}
+.mfg-tab:hover .mfg-tab-logo,
+.mfg-tab.active .mfg-tab-logo { opacity: 1; }
+.mfg-tab-count {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  opacity: .65;
+}
 .ship-card {
   background: var(--surface2);
   border: 1px solid var(--border);
@@ -1537,6 +1592,7 @@ body::after {
               Drop <strong>ship_cards.json</strong> for loadout details
             </span>
           </div>
+          <div class="mfg-tabs" id="hangar-mfg-tabs" style="display:none"></div>
           <div class="ship-cards-grid" id="hangar-ships-grid"></div>
         </div>
 
@@ -1767,6 +1823,7 @@ function renderHangarPanel(handle, hangar) {
 
     const div = document.createElement('div');
     div.className = `ship-card career-${cClass}`;
+    div.dataset.mfg = mfgCode(s.manufacturer) || mfgDisplayName(s.manufacturer) || '?';
     div.innerHTML = `
       <div class="ship-card-header">
         ${logoHtml}
@@ -1799,6 +1856,58 @@ function renderHangarPanel(handle, hangar) {
 
     grid.appendChild(div);
   });
+
+  // ── Manufacturer sub-tabs — filter the fleet grid by maker ─────────────────
+  (function buildMfgTabs() {
+    const bar = document.getElementById('hangar-mfg-tabs');
+    if (!bar) return;
+    bar.innerHTML = '';
+
+    // Tally ships per maker, keyed by RSI code (falls back to display name)
+    const makers = new Map();   // key -> { name, logo, count }
+    ships.forEach(s => {
+      const key = mfgCode(s.manufacturer) || mfgDisplayName(s.manufacturer) || '?';
+      const cur = makers.get(key) || {
+        name:  mfgDisplayName(s.manufacturer) || key,
+        logo:  mfgLogoUrl(s.manufacturer),
+        count: 0,
+      };
+      cur.count++;
+      makers.set(key, cur);
+    });
+
+    // Only worth showing once there's more than one maker to sort between
+    if (makers.size < 2) { bar.style.display = 'none'; return; }
+    bar.style.display = 'flex';
+
+    const sorted = [...makers.entries()]
+      .sort((a, b) => b[1].count - a[1].count || a[1].name.localeCompare(b[1].name));
+
+    const mkTab = (key, label, logo, count, active) => {
+      const t = document.createElement('button');
+      t.className = 'mfg-tab' + (active ? ' active' : '');
+      t.dataset.mfgFilter = key;
+      const logoHtml = logo
+        ? `<img class="mfg-tab-logo" src="${logo}" alt="" onerror="this.style.display='none'">`
+        : '';
+      t.innerHTML = `${logoHtml}<span>${esc(label)}</span><span class="mfg-tab-count">${count}</span>`;
+      return t;
+    };
+
+    bar.appendChild(mkTab('__all__', 'All Ships', null, ships.length, true));
+    sorted.forEach(([key, m]) => bar.appendChild(mkTab(key, m.name, m.logo, m.count, false)));
+
+    bar.onclick = e => {
+      const tab = e.target.closest('.mfg-tab');
+      if (!tab) return;
+      bar.querySelectorAll('.mfg-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const want = tab.dataset.mfgFilter;
+      grid.querySelectorAll('.ship-card').forEach(c => {
+        c.style.display = (want === '__all__' || c.dataset.mfg === want) ? '' : 'none';
+      });
+    };
+  })();
 
   // Close dropdowns on outside click
   document.addEventListener('click', () => {
