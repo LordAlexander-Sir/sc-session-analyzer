@@ -1216,6 +1216,52 @@ body::after {
 .bp-card-ft { padding: 8px 14px; border-top: 1px solid var(--border); text-align: right; }
 .bp-card-ft a { color: var(--cyan); font-size: 11px; text-decoration: none; }
 .bp-card-ft a:hover { text-decoration: underline; }
+
+/* ── ARMOR FAMILY DRILL-DOWN (family → sets → pieces) ── */
+.bp-fam-head, .bp-set-head {
+  width: 100%; text-align: left;
+  background: none; border: none; cursor: pointer;
+  color: inherit; font: inherit;
+}
+.bp-fam-head { padding: 13px 14px 9px; }
+.bp-fam-caret, .bp-set-caret {
+  display: inline-block; font-size: 9px; color: var(--cyan);
+  transition: transform .15s;
+}
+.bp-fam.open > .bp-fam-head .bp-fam-caret,
+.bp-set.open > .bp-set-head .bp-set-caret { transform: rotate(90deg); }
+
+.bp-fam-mats {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  padding: 0 14px 13px;
+  border-bottom: 1px solid var(--border);
+}
+.bp-mat {
+  font-size: 10px; padding: 3px 9px; border-radius: 999px;
+  background: var(--surface); border: 1px solid var(--border2); color: var(--text-dim);
+  white-space: nowrap;
+}
+
+/* family expands to full width so the drill-down has room */
+.bp-fam.open { grid-column: 1 / -1; }
+.bp-fam-detail { display: none; padding: 4px 14px 10px; }
+.bp-fam.open > .bp-fam-detail { display: block; }
+
+.bp-set { border-top: 1px solid var(--border); }
+.bp-set:first-child { border-top: none; }
+.bp-set-head { display: flex; align-items: center; gap: 9px; padding: 11px 4px; }
+.bp-set-head:hover .bp-set-name { color: var(--cyan); }
+.bp-set-name { flex: 1; font-weight: 700; font-size: 12px; color: var(--text-bright); }
+.bp-set-count { font-family: 'Consolas','Courier New',monospace; font-size: 10px; color: var(--text-dim); }
+.bp-set-pieces {
+  display: none;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px; padding: 2px 0 12px;
+}
+.bp-set.open > .bp-set-pieces { display: grid; }
+.bp-piece { background: var(--surface); }
+.bp-piece .bp-card-name { font-size: 12px; }
+.bp-piece::before { opacity: .5; }
 .ship-card {
   background: var(--surface2);
   border: 1px solid var(--border);
@@ -2762,6 +2808,19 @@ function findBlueprint(name) {
 }
 
 // Render earned blueprints as crafting cards, with category chips + search.
+// FPS armor is grouped family → set → piece (drill-down); everything else is flat.
+const _ARMOR_SLOTS = ['Core', 'Helmet', 'Arms', 'Legs', 'Backpack', 'Undersuit'];
+function _parseArmor(name) {
+  const parts = (name || '').replace(/ /g, ' ').replace(/\s+/g, ' ').trim().split(' ');
+  const i = parts.findIndex(p => _ARMOR_SLOTS.includes(p));
+  if (i < 0) return null;                            // no slot word → flat (e.g. full flight suit)
+  // Remove the slot token; remaining words = set identity (handles both
+  // "ADP Arms Woodland" and "Aves Shrike Arms" orderings). Family = first word.
+  const rest = parts.slice(0, i).concat(parts.slice(i + 1));
+  if (!rest.length) return null;                     // name was only a slot word
+  return { family: rest[0], slot: parts[i], setName: rest.join(' ') };
+}
+
 function renderBlueprintCards(seenBPNames) {
   _lastEarnedBPs = seenBPNames;
   const grid    = document.getElementById('bp-card-grid');
@@ -2779,18 +2838,41 @@ function renderBlueprintCards(seenBPNames) {
     return;
   }
 
-  // Tally categories present among earned blueprints
-  const cats = {};   // category -> { label, count }
-  earned.forEach(({ entry }) => {
-    const c   = entry ? entry.category       : 'unknown';
-    const lab = entry ? entry.category_label : '❔ No Data';
-    (cats[c] = cats[c] || { label: lab, count: 0 }).count++;
-  });
-
   const qtyStr = ing => ing.kind === 'resource'
     ? `${(+ing.quantity_scu).toLocaleString(undefined, { maximumFractionDigits: 2 })} SCU`
     : `×${ing.quantity}`;
 
+  // ── Split: armor → grouped families; everything else → flat cards ──────────
+  const cats     = {};   // category -> { label, count }  (counts = blueprints earned)
+  const families = {};   // family -> { mats:Set, sets:Map(setName -> [{name,entry,slot}]) }
+  const flat     = [];   // {name, entry}
+  earned.forEach(it => {
+    const e   = it.entry;
+    const c   = e ? e.category       : 'unknown';
+    const lab = e ? e.category_label : '❔ No Data';
+    (cats[c] = cats[c] || { label: lab, count: 0 }).count++;
+
+    const pa = (e && e.category === 'fps_armor') ? _parseArmor(e.name) : null;
+    if (pa) {
+      const setName = pa.setName;
+      const F = families[pa.family] || (families[pa.family] = { mats: new Set(), sets: new Map() });
+      (e.ingredients || []).forEach(ing => F.mats.add(ing.name));
+      if (!F.sets.has(setName)) F.sets.set(setName, []);
+      F.sets.get(setName).push({ ...it, slot: pa.slot });
+    } else {
+      flat.push(it);
+    }
+  });
+
+  // ── Card builders ──────────────────────────────────────────────────────────
+  const ingsHtml = entry => (entry.ingredients || []).map(ing =>
+    `<div class="bp-ing"><span class="bp-ing-name">${esc(ing.name)}</span><span class="bp-ing-qty ${ing.kind}">${esc(qtyStr(ing))}</span></div>`
+  ).join('') || '<div class="bp-none">No materials listed.</div>';
+
+  const wikiHtml = entry => entry.web_url
+    ? `<div class="bp-card-ft"><a href="${entry.web_url}" target="_blank" rel="noopener">Wiki ↗</a></div>` : '';
+
+  // Flat blueprint card (non-armor + slotless armor)
   const cardHtml = ({ name, entry }) => {
     if (!entry) {
       return `<div class="bp-card" data-cat="unknown" data-name="${esc(name.toLowerCase())}">
@@ -2799,10 +2881,6 @@ function renderBlueprintCards(seenBPNames) {
       </div>`;
     }
     const grade = entry.grade ? `<span class="bp-grade">G${esc(entry.grade)}</span>` : '';
-    const ings = (entry.ingredients || []).map(ing =>
-      `<div class="bp-ing"><span class="bp-ing-name">${esc(ing.name)}</span><span class="bp-ing-qty ${ing.kind}">${esc(qtyStr(ing))}</span></div>`
-    ).join('') || '<div class="bp-none">No materials listed.</div>';
-    const ftr = entry.web_url ? `<div class="bp-card-ft"><a href="${entry.web_url}" target="_blank" rel="noopener">Wiki ↗</a></div>` : '';
     return `<div class="bp-card" data-cat="${esc(entry.category)}" data-name="${esc(entry.name.toLowerCase())}">
       <div class="bp-card-hd">
         <div class="bp-card-titles">
@@ -2813,15 +2891,59 @@ function renderBlueprintCards(seenBPNames) {
       </div>
       <div class="bp-card-body">
         <div class="bp-meta">⏱ ${esc(entry.craft_time_label || '—')}  ·  ${entry.ingredient_count} material${entry.ingredient_count !== 1 ? 's' : ''}</div>
-        <div class="bp-ings">${ings}</div>
+        <div class="bp-ings">${ingsHtml(entry)}</div>
       </div>
-      ${ftr}
+      ${wikiHtml(entry)}
     </div>`;
   };
 
-  grid.innerHTML = earned.map(cardHtml).join('');
+  // Individual armor piece (innermost level — labelled by slot)
+  const pieceHtml = p => {
+    const e = p.entry;
+    if (!e) return `<div class="bp-card bp-piece"><div class="bp-card-hd"><div class="bp-card-titles"><div class="bp-card-name">${esc(p.slot || p.name)}</div></div></div><div class="bp-card-body"><div class="bp-none">No crafting data.</div></div></div>`;
+    const grade = e.grade ? `<span class="bp-grade">G${esc(e.grade)}</span>` : '';
+    return `<div class="bp-card bp-piece">
+      <div class="bp-card-hd"><div class="bp-card-titles"><div class="bp-card-name">${esc(p.slot)}</div><div class="bp-card-sub">⏱ ${esc(e.craft_time_label || '—')}</div></div>${grade}</div>
+      <div class="bp-card-body"><div class="bp-ings">${ingsHtml(e)}</div></div>
+      ${wikiHtml(e)}
+    </div>`;
+  };
 
-  // Category chips (reuse .mfg-tab pill styling): All + each present category
+  // Armor family card (collapsed: name + counts + materials; expands to sets → pieces)
+  const famHtml = (fam, F) => {
+    const setNames   = [...F.sets.keys()].sort();
+    const pieceCount = [...F.sets.values()].reduce((n, a) => n + a.length, 0);
+    const mats = [...F.mats].sort().map(m => `<span class="bp-mat">${esc(m)}</span>`).join('')
+              || '<span class="bp-mat" style="opacity:.6">no material data</span>';
+    const searchKey = (fam + ' ' + setNames.join(' ') + ' ' +
+      [...F.sets.values()].flat().map(p => p.name).join(' ')).toLowerCase();
+    const setsHtml = setNames.map(sn => {
+      const pieces = F.sets.get(sn).sort((a, b) => _ARMOR_SLOTS.indexOf(a.slot) - _ARMOR_SLOTS.indexOf(b.slot));
+      return `<div class="bp-set">
+        <button class="bp-set-head"><span class="bp-set-caret">▸</span><span class="bp-set-name">${esc(sn)}</span><span class="bp-set-count">${pieces.length} piece${pieces.length !== 1 ? 's' : ''}</span></button>
+        <div class="bp-set-pieces">${pieces.map(pieceHtml).join('')}</div>
+      </div>`;
+    }).join('');
+    return `<div class="bp-card bp-fam" data-cat="fps_armor" data-name="${esc(searchKey)}">
+      <button class="bp-fam-head">
+        <div class="bp-card-titles">
+          <div class="bp-card-name"><span class="bp-fam-caret">▸</span> ${esc(fam)}</div>
+          <div class="bp-card-sub">FPS Armor · ${setNames.length} set${setNames.length !== 1 ? 's' : ''} · ${pieceCount} piece${pieceCount !== 1 ? 's' : ''}</div>
+        </div>
+      </button>
+      <div class="bp-fam-mats">${mats}</div>
+      <div class="bp-fam-detail">${setsHtml}</div>
+    </div>`;
+  };
+
+  // ── Build combined, alpha-sorted render list (families + flat cards) ────────
+  const items = [];
+  Object.keys(families).forEach(fam => items.push({ key: fam, html: famHtml(fam, families[fam]) }));
+  flat.forEach(it => items.push({ key: (it.entry ? it.entry.name : it.name), html: cardHtml(it) }));
+  items.sort((a, b) => a.key.localeCompare(b.key));
+  grid.innerHTML = items.map(i => i.html).join('');
+
+  // ── Category chips (counts = blueprints earned, even though armor shows as families) ──
   const chips = [['__all__', 'All', earned.length]]
     .concat(Object.entries(cats)
       .sort((a, b) => b[1].count - a[1].count)
@@ -2833,7 +2955,7 @@ function renderBlueprintCards(seenBPNames) {
   let activeCat = '__all__';
   const applyFilter = () => {
     const q = (search.value || '').toLowerCase().trim();
-    grid.querySelectorAll('.bp-card').forEach(card => {
+    grid.querySelectorAll(':scope > .bp-card').forEach(card => {   // top-level only (skip nested pieces)
       const okCat = activeCat === '__all__' || card.dataset.cat === activeCat;
       const okQ   = !q || card.dataset.name.includes(q);
       card.style.display = (okCat && okQ) ? '' : 'none';
@@ -2848,6 +2970,15 @@ function renderBlueprintCards(seenBPNames) {
     applyFilter();
   };
   search.oninput = applyFilter;
+
+  // ── Drill-down: family head toggles sets; set head toggles pieces ───────────
+  grid.onclick = e => {
+    if (e.target.closest('a')) return;   // let Wiki links work
+    const setHead = e.target.closest('.bp-set-head');
+    if (setHead) { setHead.parentElement.classList.toggle('open'); return; }
+    const famHead = e.target.closest('.bp-fam-head');
+    if (famHead) { famHead.closest('.bp-fam').classList.toggle('open'); }
+  };
 }
 
 // Word-set index for fuzzy name matching
