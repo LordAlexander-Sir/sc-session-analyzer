@@ -1,8 +1,8 @@
 {
   "_comment": "Official RSI Loaner Ship Matrix — auto-updated by update_loaner_matrix.py",
   "_source": "https://support.robertsspaceindustries.com/hc/en-us/articles/360003093114-Loaner-Ship-Matrix",
-  "_rsi_updated": "2026-05-24T16:02:51Z",
-  "_bot_updated": "2026-06-03",
+  "_rsi_updated": "2026-06-18T16:30:08Z",
+  "_bot_updated": "2026-06-18",
   "_note": "Multiple loaners listed where RSI assigns more than one. First entry is the primary flyable ship.",
   "600i explorer and executive": [
     "Cyclone"
@@ -117,7 +117,7 @@
     "Aurora MR"
   ],
   "mantis": [
-    "Aurora LN"
+    "Guardian QI"
   ],
   "merchantman": [
     "Hull C",
@@ -166,10 +166,6 @@
   ],
   "pulse (+ lx)": [
     "Aurora MR"
-  ],
-  "railen": [
-    "Hercules C2",
-    "Syulen"
   ],
   "ranger cv": [
     "Cyclone"
